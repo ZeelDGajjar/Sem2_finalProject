@@ -1,4 +1,5 @@
 package org.example;
 
-public class TransactionHandler {
+public interface TransactionHandler {
+    public boolean processTransaction(Buyer buyer, Product item);
 }
