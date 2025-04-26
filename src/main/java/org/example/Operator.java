@@ -11,37 +11,29 @@ public class Operator extends User {
     }
 
     /**
-     *
-     * @param item
-     * @param amount
+     * Restores a specified amount of the given product back into the vending machine inventory
+     * @param item The product to be restored
+     * @param amount The number of units to add to the inventory
      */
-    public void restoreProduct(Product item, int amount) {
-
-    }
+    public void restoreProduct(Product item, int amount) {}
 
     /**
-     *
-     * @param item
-     * @param price
+     * Updates the selling price of a specific product in the vending machine
+     * @param item The product whose price is being updates
+     * @param price The new price to assign to the product
      */
-    public void updateProductPrice(Product item, double price) {
-
-    }
+    public void updateProductPrice(Product item, double price) {}
 
     /**
-     *
-     * @param fileName
+     * Reviews the contents of a profit sheet from a given file
+     * @param fileName The name of the profit sheet file to be reviewed
      */
-    public void reviewProfitSheet(String fileName) {
-
-    }
+    public void reviewProfitSheet(String fileName) {}
 
     /**
-     *
-     * @param message
+     * Displays a custom message intended for the operator. e.g.: Successful restock into the system, etc..
+     * @param message The message to be displayed
      */
     @Override
-    public void displayMessage(String message) {
-
-    }
+    public void displayMessage(String message) {}
 }

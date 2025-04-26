@@ -6,22 +6,22 @@ public class Money {
     private Map<Double, Integer> cashMap;
 
     /**
-     *
-     * @param amount
+     * Adds value to the total money based on the cash to add
+     * @param cash a map of the amount and it's kind in cash
      */
-    public void add(double amount) {}
+    public void add(Map<Double, Integer> cash) {}
 
     /**
-     *
-     * @param amount
+     * Removes value from the total money based on the cash to remove
+     * @param cash a map of the amount and it's kind in cash
      */
-    public void subtract(double amount) {}
+    public void subtract(Map<Double, Integer> cash) {}
 
     /**
-     *
-     * @return
+     * Calculates the total amount
+     * @return a map value of amount, and it's kind in cash
      */
-    public double calculateTotal() {
-        return 0;
+    public Map<Double, Integer> calculateTotal() {
+        return null;
     }
 }

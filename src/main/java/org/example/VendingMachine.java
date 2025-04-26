@@ -15,76 +15,65 @@ public class VendingMachine implements TransactionHandler{
     }
 
     /**
-     *
+     * Despenses selected item once the transaction is successfully completed
      * @param item
      */
-    public void dispenseItem(Product item) {
-
-    }
+    public void dispenseItem(Product item) {}
 
     /**
-     *
-     * @param name
-     * @return
+     * Allows a user to select an item from the inventory by name
+     * @param name The name of the product the user wants to select
+     * @return The matching Product if found; otherwise, null
      */
     public Product selectItem(String name) {
-
         return null;
     }
 
     /**
-     *
-     * @param money
+     * Adds money to the current session for purchasing products
+     * @param money The Money object representing the amount inserted by the user
      */
-    public void addMoney(Money money) {
-
-    }
+    public void addMoney(Money money) {}
 
     /**
-     *
+     * Displays the list pf available products in the inventory
      */
-    public void showInventory() {
-
-    }
+    public void showInventory() {}
 
     /**
-     *
+     * Writes vending machine inventory and sales data to a file for record-keeping
      */
-    public void writeToFile() {
-
-    }
+    public void writeToFile() {}
 
     /**
-     *
-     * @param item
-     * @param price
+     * Reloads or adds stock for an existing or new product with a specified price
+     * @param item The product to be reloaded into inventory
+     * @param price The price to set for the reloaded product
      */
-    public void reloadProduct(Product item, double price) {
-
-    }
+    public void reloadProduct(Product item, double price) {}
 
     /**
-     *
-     * @param item
-     * @param price
+     * Changes the selling price of an existing product in the inventory
+     * @param item The product whose price is to be updated
+     * @param price The new price for the product
      */
     public void changePrice(Product item, double price) {
 
     }
 
     /**
-     *
-     * @param fileName
+     *  Reads and processes the profit sheet from a specified file
+     * @param fileName The name of the file containing profit information
      */
     public void readProfitSheet(String fileName) {
 
     }
 
     /**
-     *
-     * @param buyer
-     * @param item
-     * @return
+     * Processes a transaction by checking if the buyer has enough money to purchase the item
+     * @param buyer The buyer attempting to purchase a product
+     * @param item The product the buyer wants to purchase
+     * @return true if the transaction is successful; false otherwise
      */
     @Override
     public boolean processTransaction(Buyer buyer, Product item) {
