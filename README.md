@@ -1,6 +1,7 @@
 Vending Machine System
 
 Project Description
+
 This project is a Java-based simulation of a real-world vending machine system. It allows users to interact with the vending machine by inserting money, selecting products (such as drinks and snacks), and receiving items if sufficient funds are available. The system also handles change calculation and provides a user-friendly interface for both customers and machine operators.
 
 The vending machine supports different user roles:
