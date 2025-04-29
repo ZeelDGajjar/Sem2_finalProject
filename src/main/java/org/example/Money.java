@@ -2,6 +2,7 @@ package org.example;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class Money {
     private Map<Double, Integer> cashMap;
@@ -48,5 +49,32 @@ public class Money {
             total += entry.getKey() * entry.getValue();
         }
         return total;
+    }
+
+    @Override
+    public String toString() {
+        return "Money{" +
+                "cashMap=" + cashMap +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Money money = (Money) o;
+        return Objects.equals(cashMap, money.cashMap);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(cashMap);
+    }
+
+    public Map<Double, Integer> getCashMap() {
+        return cashMap;
+    }
+
+    public void setCashMap(Map<Double, Integer> cashMap) {
+        this.cashMap = cashMap;
     }
 }

@@ -9,6 +9,14 @@ public class Product implements Comparable<Product> {
     private int stock;
     private int maxCapacity;
 
+    public Product() {
+        this.name = "";
+        this.price = 0;
+        this.category = "";
+        this.stock = 0;
+        this.maxCapacity = 10;
+    }
+
     public Product(String name, double price, String category, int stock, int maxCapacity) {
         this.name = name;
         this.price = price;

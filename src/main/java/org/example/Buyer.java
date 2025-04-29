@@ -31,4 +31,9 @@ public class Buyer extends User{
      */
     @Override
     public void displayMessage(String message) {}
+
+    @Override
+    public String toString() {
+        return "Buyer{}" + super.toString();
+    }
 }
