@@ -43,7 +43,7 @@ public class Money {
      * @return a map value of amount, and it's kind in cash
      */
     public Double calculateTotal() {
-        double total = 0;
+        double total = 0.0;
         for (Map.Entry<Double, Integer> entry : cashMap.entrySet()) {
             total += entry.getKey() * entry.getValue();
         }
