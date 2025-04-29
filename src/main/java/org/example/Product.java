@@ -7,26 +7,37 @@ public class Product implements Comparable<Product> {
     private double price;
     private String category;
     private int stock;
-    private int MaxCapacity;
+    private int maxCapacity;
 
-    public Product(String name, double price, String category, int stock, int MaxCapacity) {
+    public Product(String name, double price, String category, int stock, int maxCapacity) {
         this.name = name;
         this.price = price;
         this.category = category;
         this.stock = stock;
-        this.MaxCapacity = MaxCapacity;
+        this.maxCapacity = maxCapacity;
     }
 
     /**
      * Reloads the inventory of a product by increasing its stock
      * @param amount The number of units to add to the product's inventory
      */
-    public void reload(int amount) {}
+    public void reload(int amount) {
+        if (stock + amount > maxCapacity) {
+            stock = maxCapacity;
+        } else {
+            stock += amount;
+        }
+    }
 
     /**
      * Buys a product, decreasing its stock by one
      */
-    public void buy() {}
+    public void buy() {
+        if (stock <= 0) {
+            throw new IllegalStateException("Product out of stock.");
+        }
+        this.stock--;
+    }
 
     /**
      * Compares this product to another based on their price
@@ -46,7 +57,7 @@ public class Product implements Comparable<Product> {
                 ", price=" + price +
                 ", category='" + category + '\'' +
                 ", stock=" + stock +
-                ", MaxCapacity=" + MaxCapacity +
+                ", maxCapacity=" + maxCapacity +
                 '}';
     }
 
@@ -54,12 +65,12 @@ public class Product implements Comparable<Product> {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Product product = (Product) o;
-        return Double.compare(price, product.price) == 0 && stock == product.stock && MaxCapacity == product.MaxCapacity && Objects.equals(name, product.name) && Objects.equals(category, product.category);
+        return Double.compare(price, product.price) == 0 && stock == product.stock && maxCapacity == product.maxCapacity && Objects.equals(name, product.name) && Objects.equals(category, product.category);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, price, category, stock, MaxCapacity);
+        return Objects.hash(name, price, category, stock, maxCapacity);
     }
 
     public String getName() {
@@ -94,11 +105,11 @@ public class Product implements Comparable<Product> {
         this.stock = stock;
     }
 
-    public int getMaxCapacity() {
-        return MaxCapacity;
+    public int getmaxCapacity() {
+        return maxCapacity;
     }
 
-    public void setMaxCapacity(int maxCapacity) {
-        MaxCapacity = maxCapacity;
+    public void setmaxCapacity(int maxCapacity) {
+        maxCapacity = maxCapacity;
     }
 }
