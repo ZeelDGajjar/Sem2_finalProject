@@ -11,7 +11,13 @@ public class ProductNameComparator implements Comparator<Product> {
      */
     @Override
     public int compare(Product o1, Product o2) {
-        return o1.getName().compareTo(o2.getName())
-                + (int) (o1.getPrice() - o2.getPrice());
+        if (o1.getName() == null || o2.getName() == null) {
+            throw new NullPointerException("Product name cannot be null");
+        }
+        int nameComparison = o1.getName().compareTo(o2.getName());
+        if (nameComparison != 0) {
+            return nameComparison;
+        }
+        return Double.compare(o1.getPrice(), o2.getPrice());
     }
 }
