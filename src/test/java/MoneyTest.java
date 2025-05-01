@@ -130,15 +130,12 @@ public class MoneyTest {
     public void testCalculateTotal_NullMap() {
         Money money = new Money();
 
-        // Simulating a null map being passed to calculateTotal method
         money.setCashMap(null);
 
-        // Assert that NullPointerException is thrown when the cashMap is null
         NullPointerException exception = assertThrows(NullPointerException.class, () -> {
-            money.calculateTotal();  // Now it uses the instance's cashMap directly
+            money.calculateTotal();
         });
 
-        // Assert the exception message
         assertEquals("Cash map cannot be null", exception.getMessage());
     }
 }

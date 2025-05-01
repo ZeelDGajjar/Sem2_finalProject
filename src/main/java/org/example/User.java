@@ -10,4 +10,6 @@ public abstract class User implements MessageDisplay {
         this.id = nextId++;
         this.name = name;
     }
+
+    public abstract void displayMessage(String message);
 }

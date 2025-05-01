@@ -1,5 +1,6 @@
 package org.example;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Operator extends User {
@@ -8,6 +9,14 @@ public class Operator extends User {
 
     public Operator(int id, String name) {
         super(id, name);
+        profitSheets = new ArrayList<String>();
+        accessLevel = "";
+    }
+
+    public Operator(int id, String name, String accessLevel, List<String> profitSheets) {
+        super(id, name);
+        this.accessLevel = accessLevel;
+        this.profitSheets = profitSheets;
     }
 
     /**

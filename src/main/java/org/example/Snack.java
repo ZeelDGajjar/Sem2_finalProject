@@ -5,8 +5,9 @@ import java.util.Objects;
 public class Snack extends Product {
     public int weightInGrams;
 
-    public Snack(int weightInGrams) {
-        this.weightInGrams = weightInGrams;
+    public Snack() {
+        super("", 0, "", 0, 5);
+        this.weightInGrams = 1;
     }
 
     public Snack(String name, double price, String category, int stock, int MaxCapacity, int weightInGrams) {

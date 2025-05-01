@@ -5,65 +5,146 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class BuyerTest {
 
-    @Test
-    public void testChooseProductValid() {
-        // Create a new Buyer and Product here to test
-        Buyer buyer = new Buyer(1, "John Doe");
-        Product product = new Product("Soda", 1.50, "", 8,20);
 
-        // Test that the product is correctly chosen (this will work once chooseProduct is implemented)
+    @Test
+    public void testChooseProduct_Valid() {
+        // Create a new Buyer and Product directly in this test
+        Buyer buyer = new Buyer(1, "John Doe");
+        Product product = new Product("Soda", 1.50, "", 6, 12); // Assuming Product has a constructor like this
+
+        // Test choosing a valid product (it should return the correct product from the inventory)
         buyer.chooseProduct("Soda");
-        // Make sure the chosen product matches what's expected
-        assertEquals(product, buyer.chooseProduct("Soda"));  // Change this once method is implemented to match the product from inventory
+        // If chooseProduct is working, this should match the product
+        assertEquals(product, buyer.chooseProduct("Soda"));
     }
 
     @Test
-    public void testChooseProductInvalid() {
-        // Create a new Buyer to test invalid product selection
+    public void testChooseProduct_Invalid() {
+        // Create a new Buyer for testing an invalid product selection
         Buyer buyer = new Buyer(1, "John Doe");
 
-        // Test choosing a non-existent product (this should return null if not found)
+        // Test with a product name that doesn't exist in the inventory
+        // It should return null for invalid product names
         assertNull(buyer.chooseProduct("NonExistentProduct"));
     }
 
     @Test
-    public void testCancelOrder() {
-        // Create a new Buyer to test canceling an order
+    public void testChooseProduct_EmptyString() {
+        // Create a new Buyer and test with an empty product name
         Buyer buyer = new Buyer(1, "John Doe");
 
-        // Choose a product first and then cancel the order
+        // Test with an empty string as product name
+        assertNull(buyer.chooseProduct(""));
+    }
+
+    @Test
+    public void testChooseProduct_Null() {
+        // Create a new Buyer and test with null as product name
+        Buyer buyer = new Buyer(1, "John Doe");
+
+        // Test with null as product name
+        assertNull(buyer.chooseProduct(null));
+    }
+
+    @Test
+    public void testCancelOrder() {
+        // Create a new Buyer and test cancelOrder functionality
+        Buyer buyer = new Buyer(1, "John Doe");
+
+        // Simulate choosing a product, then cancel the order
         buyer.chooseProduct("Soda");
         buyer.cancelOrder();
 
-        // After canceling, the product selection should be reset to null
+        // After canceling, the product selection should be reset (null)
+        assertNull(buyer.chooseProduct("Soda"));
+    }
+
+    @Test
+    public void testCancelOrder_NoSelection() {
+        // Create a new Buyer and test cancelOrder when no product is selected
+        Buyer buyer = new Buyer(1, "John Doe");
+
+        // No product selected, cancel order should have no effect
+        buyer.cancelOrder();
+        // Ensure no product is selected
         assertNull(buyer.chooseProduct("Soda"));
     }
 
     @Test
     public void testBuy() {
-        // Create a new Buyer to test the buy method
+        // Create a new Buyer and test the buy method
         Buyer buyer = new Buyer(1, "John Doe");
 
-        // Choose a product and then try buying it
+        // Simulate choosing a product and then buying it
         buyer.chooseProduct("Soda");
         buyer.buy();
 
-        // Once buy is implemented, you'll need to verify that the purchase is successful (check internal states or messages)
-        // For now, we'll just assume it worked and put a placeholder assertion
-        assertTrue(true); // Replace this with meaningful checks once the buy method is functional
+        // In the future, check the final state of the purchase (like confirming the product was bought)
+        // Right now, assert a placeholder true, replace with meaningful assertions later
+        assertTrue(true);
+    }
+
+    @Test
+    public void testBuy_NoProductSelected() {
+        // Create a new Buyer and test buying with no product selected
+        Buyer buyer = new Buyer(1, "John Doe");
+
+        // Simulate trying to buy when no product is selected
+        buyer.buy();
+        // Assuming buy would not do anything if no product is selected
+        assertTrue(true); // Placeholder, replace with a meaningful check once implemented
+    }
+
+    @Test
+    public void testBuy_AlreadyBoughtProduct() {
+        // Create a new Buyer and test buying an already bought product
+        Buyer buyer = new Buyer(1, "John Doe");
+
+        // Simulate choosing a product and buying it
+        buyer.chooseProduct("Soda");
+        buyer.buy();
+
+        // Try buying again, it should either fail or reset the order
+        buyer.buy();
+        // Placeholder to check if it behaves as expected (like not allowing a second purchase)
+        assertTrue(true); // Replace with actual validation once the buy process is properly implemented
     }
 
     @Test
     public void testDisplayMessage() {
-        // Create a new Buyer to test displaying messages
+        // Create a new Buyer and test displaying a message
         Buyer buyer = new Buyer(1, "John Doe");
 
-        // Display a test message
+        // Simulate displaying a message (this will need to be tested once the display logic is clear)
         buyer.displayMessage("Test message");
 
-        // This is a bit tricky because the method doesn't return anything, so you'd have to check if the message gets displayed correctly.
-        // Once displayMessage is fully implemented, replace this with a more specific assertion
-        assertTrue(true); // Placeholder, you’ll need to test for message output or state changes when implemented
+        // Right now, we can't check the output, so we use a placeholder
+        // Replace with meaningful assertions when the actual display functionality is implemented
+        assertTrue(true);
+    }
+
+    @Test
+    public void testDisplayMessage_EmptyString() {
+        // Create a new Buyer and test displaying an empty message
+        Buyer buyer = new Buyer(1, "John Doe");
+
+        // Simulate displaying an empty message
+        buyer.displayMessage("");
+
+        // No way to assert this until actual message functionality is implemented
+        assertTrue(true);
+    }
+
+    @Test
+    public void testDisplayMessage_Null() {
+        // Create a new Buyer and test displaying a null message
+        Buyer buyer = new Buyer(1, "John Doe");
+
+        // Simulate displaying a null message
+        buyer.displayMessage(null);
+
+        // No way to assert this until actual message functionality is implemented
+        assertTrue(true);
     }
 
     @Test

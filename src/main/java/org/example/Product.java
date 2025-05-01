@@ -9,14 +9,6 @@ public class Product implements Comparable<Product> {
     private int stock;
     private int maxCapacity;
 
-    public Product() {
-        this.name = "";
-        this.price = 0;
-        this.category = "";
-        this.stock = 0;
-        this.maxCapacity = 10;
-    }
-
     public Product(String name, double price, String category, int stock, int maxCapacity) {
         this.name = name;
         this.price = price;
@@ -26,36 +18,38 @@ public class Product implements Comparable<Product> {
     }
 
     /**
-     * Reloads the inventory of a product by increasing its stock
-     * @param amount The number of units to add to the product's inventory
+     * Reloads the stock, ensuring it does not exceed the maximum capacity.
+     * @param amount The amount to add to the stock
      */
     public void reload(int amount) {
-        if (stock + amount > maxCapacity) {
-            stock = maxCapacity;
-        } else {
-            stock += amount;
+        if (amount < 0) {
+            throw new IllegalArgumentException("Amount to reload cannot be negative.");
         }
+        stock = Math.min(stock + amount, maxCapacity);
     }
 
     /**
-     * Buys a product, decreasing its stock by one
+     * Finalizes the purchase of the product by reducing the stock by 1.
+     * Throws an exception if the product is out of stock.
      */
     public void buy() {
         if (stock <= 0) {
             throw new IllegalStateException("Product out of stock.");
         }
         this.stock--;
+        System.out.println("Product " + name + " purchased successfully.");
     }
 
     /**
-     * Compares this product to another based on their price
-     * @param o the object to be compared.
-     * @return an int value to show how two objects are related
+     * Compares products first by price, then by name if prices are the same.
      */
     @Override
     public int compareTo(Product o) {
-        return (int) (this.price - o.price)
-                + this.name.compareTo(o.name);
+        int priceComparison = Double.compare(this.price, o.price);
+        if (priceComparison != 0) {
+            return priceComparison;
+        }
+        return this.name.compareTo(o.name);
     }
 
     @Override
@@ -66,7 +60,7 @@ public class Product implements Comparable<Product> {
                 ", category='" + category + '\'' +
                 ", stock=" + stock +
                 ", maxCapacity=" + maxCapacity +
-                '}';
+                '}' + super.toString();
     }
 
     @Override
@@ -113,11 +107,11 @@ public class Product implements Comparable<Product> {
         this.stock = stock;
     }
 
-    public int getmaxCapacity() {
+    public int getMaxCapacity() {
         return maxCapacity;
     }
 
-    public void setmaxCapacity(int maxCapacity) {
+    public void setMaxCapacity(int maxCapacity) {
         this.maxCapacity = maxCapacity;
     }
 }

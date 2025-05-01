@@ -2,6 +2,7 @@ package org.example;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class VendingMachine implements TransactionHandler{
     private List<User> users;
@@ -12,6 +13,12 @@ public class VendingMachine implements TransactionHandler{
         users = new ArrayList<User>();
         inventory = new ArrayList<>();
         currentSessionMoney = new Money();
+    }
+
+    public VendingMachine(List<User> users, List<Product> inventory, Money currentSessionMoney) {
+        this.users = users;
+        this.inventory = inventory;
+        this.currentSessionMoney = currentSessionMoney;
     }
 
     /**
@@ -78,5 +85,50 @@ public class VendingMachine implements TransactionHandler{
     @Override
     public boolean processTransaction(Buyer buyer, Product item) {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return "VendingMachine{" +
+                "users=" + users +
+                ", inventory=" + inventory +
+                ", currentSessionMoney=" + currentSessionMoney +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        VendingMachine that = (VendingMachine) o;
+        return Objects.equals(users, that.users) && Objects.equals(inventory, that.inventory) && Objects.equals(currentSessionMoney, that.currentSessionMoney);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(users, inventory, currentSessionMoney);
+    }
+
+    public List<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<User> users) {
+        this.users = users;
+    }
+
+    public List<Product> getInventory() {
+        return inventory;
+    }
+
+    public void setInventory(List<Product> inventory) {
+        this.inventory = inventory;
+    }
+
+    public Money getCurrentSessionMoney() {
+        return currentSessionMoney;
+    }
+
+    public void setCurrentSessionMoney(Money currentSessionMoney) {
+        this.currentSessionMoney = currentSessionMoney;
     }
 }
