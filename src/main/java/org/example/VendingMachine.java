@@ -53,7 +53,11 @@ public class VendingMachine implements TransactionHandler{
     /**
      * Displays the list of available products in the inventory
      */
-    public void showInventory() {}
+    public void showInventory() {
+        inventory.stream()
+                .map(p -> Map.of(p.getName(), p.getStock()))
+                .forEach(System.out::println);  // Make sure it actually prints both the name and the stock
+    }
 
     /**
      * Writes vending machine inventory and sales data to a file for record-keeping
@@ -63,9 +67,16 @@ public class VendingMachine implements TransactionHandler{
     /**
      * Reloads or adds stock for an existing or new product with a specified price
      * @param item The product to be reloaded into inventory
-     * @param price The price to set for the reloaded product
+     * @param amount The amount of item to add
      */
-    public void reloadProduct(Product item, double price) {}
+    public void reloadProduct(Product item, int amount) {
+        if (amount <= item.getMaxCapacity()) {
+            for (int i = 0; i < amount; i++) {
+                inventory.add(item);
+            }
+        }
+        item.setStock(item.getMaxCapacity());
+    }
 
     /**
      * Changes the selling price of an existing product in the inventory
@@ -73,16 +84,14 @@ public class VendingMachine implements TransactionHandler{
      * @param price The new price for the product
      */
     public void changePrice(Product item, double price) {
-
+        item.setPrice(price);
     }
 
     /**
      *  Reads and processes the profit sheet from a specified file
      * @param fileName The name of the file containing profit information
      */
-    public void readProfitSheet(String fileName) {
-
-    }
+    public void readProfitSheet(String fileName) {}
 
     /**
      * Processes a transaction by checking if the buyer has enough money to purchase the item
