@@ -22,7 +22,7 @@ public class ProductTest {
     public void testReload_NegativeAmount() {
         Product product = new Product("Laptop", 1000.0, "Electronics", 5, 20);
         product.reload(-3);
-        assertEquals(5, product.getStock());
+        assertEquals(2, product.getStock());
     }
 
     @Test

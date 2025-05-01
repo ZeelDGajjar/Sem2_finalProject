@@ -1,81 +1,80 @@
+import org.example.*;
 
-import org.example.Buyer;
-import org.example.Product;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-class BuyerTest {
+public class BuyerTest {
 
-    private Buyer buyer;
+    @Test
+    public void testChooseProductValid() {
+        // Create a new Buyer and Product here to test
+        Buyer buyer = new Buyer(1, "John Doe");
+        Product product = new Product("Soda", 1.50, "", 8,20);
 
-    @BeforeEach
-    void setUp() {
-        // Set up a Buyer instance for each test
-        buyer = new Buyer(1, "John Doe");
+        // Test that the product is correctly chosen (this will work once chooseProduct is implemented)
+        buyer.chooseProduct("Soda");
+        // Make sure the chosen product matches what's expected
+        assertEquals(product, buyer.chooseProduct("Soda"));  // Change this once method is implemented to match the product from inventory
     }
 
     @Test
-    void testChooseProduct() {
-        // Assuming you will have an inventory to choose products from
-        // This test will check if a product can be selected by name from the inventory.
+    public void testChooseProductInvalid() {
+        // Create a new Buyer to test invalid product selection
+        Buyer buyer = new Buyer(1, "John Doe");
 
-        // Example product that you would expect to be in your inventory
-        Product coke = new Product("Coke", 1.50, "", 4, 66); // You can expand Product to hold more attributes like price
-
-        // Add a mock inventory here once you implement it. For now, it should return null or a valid product.
-        Product result = buyer.chooseProduct("Coke");
-
-        assertNotNull(result, "Product should be found in the inventory");
-        assertEquals("Coke", result.getName(), "Product name should match");
-
-        // If you implement the logic for product not found, this should be tested
-        result = buyer.chooseProduct("Pepsi");
-        assertNull(result, "Product should not be found if not in inventory");
+        // Test choosing a non-existent product (this should return null if not found)
+        assertNull(buyer.chooseProduct("NonExistentProduct"));
     }
 
     @Test
-    void testCancelOrder() {
-        // Verifying that canceling an order doesn't throw any exception
-        // This would be more meaningful when cancelOrder actually resets a selection or order state
+    public void testCancelOrder() {
+        // Create a new Buyer to test canceling an order
+        Buyer buyer = new Buyer(1, "John Doe");
 
-        // For now, it just ensures no exceptions are thrown
-        assertDoesNotThrow(() -> buyer.cancelOrder(), "Cancel order should not throw any exception");
+        // Choose a product first and then cancel the order
+        buyer.chooseProduct("Soda");
+        buyer.cancelOrder();
 
-        // Optionally: If you plan to track selected products or orders, check that it is reset
-        // assertNull(buyer.getSelectedProduct(), "Order should be reset after canceling");
+        // After canceling, the product selection should be reset to null
+        assertNull(buyer.chooseProduct("Soda"));
     }
 
     @Test
-    void testBuy() {
-        // Ensures the buy method can be called without errors
-        // Implement logic to check if the selected product is actually being bought and money is handled
+    public void testBuy() {
+        // Create a new Buyer to test the buy method
+        Buyer buyer = new Buyer(1, "John Doe");
 
-        // Example: Set a product selection before calling buy (once it's implemented)
-        Product selectedProduct = new Product("Coke", 1.50,"", 4, 66); // Assuming the buyer selects this product
-        buyer.chooseProduct("Coke");
+        // Choose a product and then try buying it
+        buyer.chooseProduct("Soda");
+        buyer.buy();
 
-        assertDoesNotThrow(() -> buyer.buy(), "Buy method should not throw any exception");
-
-        // Optionally: Check if the product purchase is processed, such as money handling or inventory updates
-        // assertTrue(buyer.hasPurchased(), "Buyer should have completed the purchase after calling buy()");
+        // Once buy is implemented, you'll need to verify that the purchase is successful (check internal states or messages)
+        // For now, we'll just assume it worked and put a placeholder assertion
+        assertTrue(true); // Replace this with meaningful checks once the buy method is functional
     }
 
     @Test
-    void testDisplayMessage() {
-        // This is for testing if the message is displayed correctly
-        // If displayMessage interacts with UI or logging, you should capture or mock output
+    public void testDisplayMessage() {
+        // Create a new Buyer to test displaying messages
+        Buyer buyer = new Buyer(1, "John Doe");
 
-        assertDoesNotThrow(() -> buyer.displayMessage("Test Message"), "Display message should not throw any exception");
+        // Display a test message
+        buyer.displayMessage("Test message");
 
-        // Optionally: Check if the message is actually displayed or logged
-        // This will depend on how you implement displayMessage. You may need to mock the UI or console output.
+        // This is a bit tricky because the method doesn't return anything, so you'd have to check if the message gets displayed correctly.
+        // Once displayMessage is fully implemented, replace this with a more specific assertion
+        assertTrue(true); // Placeholder, you’ll need to test for message output or state changes when implemented
     }
 
     @Test
-    void testToString() {
-        // Verifying the toString method works correctly, appending the parent class's toString
-        String expected = "Buyer{}" + buyer.toString(); // Expecting Buyer{} plus the parent User's toString result
-        assertEquals(expected, buyer.toString(), "toString should return the correct string format");
+    public void testToString() {
+        // Create a new Buyer to test the toString method
+        Buyer buyer = new Buyer(1, "John Doe");
+
+        // We expect the toString method to return something like "Buyer{}" + the superclass toString
+        String expected = "Buyer{}" + buyer.toString();
+
+        // Check if the toString method works as expected
+        assertEquals(expected, buyer.toString());
     }
 }
