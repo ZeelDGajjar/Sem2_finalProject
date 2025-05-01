@@ -8,33 +8,50 @@ public class Money {
     private Map<Double, Integer> cashMap;
 
     public Money() {
-        this.cashMap = new HashMap<Double, Integer>();
+        this.cashMap = new HashMap<>();
     }
 
     public Money(Map<Double, Integer> cashMap) {
-        this.cashMap = cashMap;
+        this.cashMap = cashMap == null ? new HashMap<>() : cashMap;
     }
 
     /**
-     * Adds value to the total money based on the cash to add
-     * @param cash a map of the amount and it's kind in cash
+     * Adds value to the total money based on the cash to add.
+     * @param cash a map of the amount and its kind in cash
      */
     public void add(Map<Double, Integer> cash) {
+        if (cash == null) {
+            throw new NullPointerException("The provided map cannot be null");
+        }
+
         for (Map.Entry<Double, Integer> entry : cash.entrySet()) {
+            if (entry.getKey() == null || entry.getValue() == null) {
+                throw new IllegalArgumentException("Invalid key or value in map");
+            }
+
             double denomination = entry.getKey();
             int count = entry.getValue();
-            if (count <= 0) continue; // skip invalid or zero counts
+            if (count <= 0) continue;
 
-            this.cashMap.put(denomination,
-                    this.cashMap.getOrDefault(denomination, 0) + count);
+            this.cashMap.put(denomination, this.cashMap.getOrDefault(denomination, 0) + count);
         }
     }
 
     /**
-     * Removes value from the total money based on the cash to remove
-     * @param cash a map of the amount and it's kind in cash
+     * Removes value from the total money based on the cash to remove.
+     * @param cash a map of the amount and its kind in cash
      */
     public void subtract(Map<Double, Integer> cash) {
+        if (cash == null) {
+            throw new NullPointerException("Cannot subtract null");
+        }
+
+        for (Map.Entry<Double, Integer> entry : cash.entrySet()) {
+            if (entry.getValue() == null) {
+                throw new IllegalArgumentException("Invalid quantity");
+            }
+        }
+
         for (Map.Entry<Double, Integer> entry : cash.entrySet()) {
             double denomination = entry.getKey();
             int countToSubtract = entry.getValue();
@@ -57,12 +74,19 @@ public class Money {
     }
 
     /**
-     * Calculates the total amount
-     * @return a map value of amount, and it's kind in cash
+     * Calculates the total amount.
+     * @return the total amount in cash
      */
     public double calculateTotal() {
+        if (this.cashMap == null) {
+            throw new NullPointerException("Cash map cannot be null");
+        }
+
         double total = 0.0;
-        for (Map.Entry<Double, Integer> entry : cashMap.entrySet()) {
+        for (Map.Entry<Double, Integer> entry : this.cashMap.entrySet()) {
+            if (entry.getKey() == null || entry.getValue() == null) {
+                throw new IllegalArgumentException("Invalid key or value in cash map");
+            }
             total += entry.getKey() * entry.getValue();
         }
         return total;
@@ -70,9 +94,7 @@ public class Money {
 
     @Override
     public String toString() {
-        return "Money{" +
-                "cashMap=" + cashMap +
-                '}';
+        return "Money{" + "cashMap=" + cashMap + '}';
     }
 
     @Override
