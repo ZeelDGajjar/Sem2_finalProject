@@ -11,13 +11,22 @@ public class Money {
         this.cashMap = new HashMap<Double, Integer>();
     }
 
+    public Money(Map<Double, Integer> cashMap) {
+        this.cashMap = cashMap;
+    }
+
     /**
      * Adds value to the total money based on the cash to add
      * @param cash a map of the amount and it's kind in cash
      */
     public void add(Map<Double, Integer> cash) {
         for (Map.Entry<Double, Integer> entry : cash.entrySet()) {
-            this.cashMap.put(entry.getKey(), this.cashMap.getOrDefault(entry.getKey(), 0) + entry.getValue());
+            double denomination = entry.getKey();
+            int count = entry.getValue();
+            if (count <= 0) continue; // skip invalid or zero counts
+
+            this.cashMap.put(denomination,
+                    this.cashMap.getOrDefault(denomination, 0) + count);
         }
     }
 
@@ -28,13 +37,21 @@ public class Money {
     public void subtract(Map<Double, Integer> cash) {
         for (Map.Entry<Double, Integer> entry : cash.entrySet()) {
             double denomination = entry.getKey();
-            int currentValue = this.cashMap.getOrDefault(denomination, 0);
-            int result = currentValue - entry.getValue();
+            int countToSubtract = entry.getValue();
+            if (countToSubtract <= 0) continue;
 
-            if (result > 0) {
-                this.cashMap.put(denomination, result);
-            } else {
+            int currentCount = this.cashMap.getOrDefault(denomination, 0);
+
+            if (countToSubtract > currentCount) {
+                throw new IllegalArgumentException("Not enough of $" + denomination + " to subtract.");
+            }
+
+            int remaining = currentCount - countToSubtract;
+
+            if (remaining == 0) {
                 this.cashMap.remove(denomination);
+            } else {
+                this.cashMap.put(denomination, remaining);
             }
         }
     }
@@ -43,7 +60,7 @@ public class Money {
      * Calculates the total amount
      * @return a map value of amount, and it's kind in cash
      */
-    public Double calculateTotal() {
+    public double calculateTotal() {
         double total = 0.0;
         for (Map.Entry<Double, Integer> entry : cashMap.entrySet()) {
             total += entry.getKey() * entry.getValue();
