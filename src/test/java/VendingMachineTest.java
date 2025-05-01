@@ -10,8 +10,9 @@ class VendingMachineTest {
     void testDispenseItem_withValidItem() {
         VendingMachine vm = new VendingMachine();
         Product product = new Product("Chips", 2.0, "Snack", 10, 20);
+        Buyer buyer = new Buyer(12, "");
 
-        vm.dispenseItem(product);
+        vm.dispenseItem(buyer, product);
 
         // Should reduce product stock by one
         // Should not allow stock to drop below zero
@@ -22,8 +23,9 @@ class VendingMachineTest {
     @Test
     void testDispenseItem_withNullItem() {
         VendingMachine vm = new VendingMachine();
+        Buyer buyer = new Buyer(11, "");
 
-        vm.dispenseItem(null);
+        vm.dispenseItem(buyer, null);
 
         // Should handle null input without crashing
         // Should not attempt to update inventory

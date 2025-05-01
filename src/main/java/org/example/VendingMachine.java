@@ -1,8 +1,6 @@
 package org.example;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class VendingMachine implements TransactionHandler{
     private List<User> users;
@@ -11,7 +9,7 @@ public class VendingMachine implements TransactionHandler{
 
     public VendingMachine() {
         users = new ArrayList<User>();
-        inventory = new ArrayList<>();
+        inventory = new LinkedList<>();
         currentSessionMoney = new Money();
     }
 
@@ -23,27 +21,37 @@ public class VendingMachine implements TransactionHandler{
 
     /**
      * Despenses selected item once the transaction is successfully completed
-     * @param item
+     * @param buyer the buyer doing the performance
+     * @param item the to dispense
      */
-    public void dispenseItem(Product item) {}
+    public void dispenseItem(Buyer buyer, Product item) {
+        if (processTransaction(buyer, item) || inventory.contains(item)) {
+            inventory.remove(item);
+        }
+    }
 
     /**
      * Allows a user to select an item from the inventory by name
-     * @param name The name of the product the user wants to select
+     * @param itemName The name of the product the user wants to select
      * @return The matching Product if found; otherwise, null
      */
-    public Product selectItem(String name) {
-        return null;
+    public Product selectItem(String itemName) {
+       if (inventory.contains(itemName)) {
+           return inventory.get(inventory.indexOf(itemName));
+       }
+       return null;
     }
 
     /**
      * Adds money to the current session for purchasing products
      * @param money The Money object representing the amount inserted by the user
      */
-    public void addMoney(Money money) {}
+    public void addMoney(Money money) {
+        currentSessionMoney.add((Map<Double, Integer>) money);
+    }
 
     /**
-     * Displays the list pf available products in the inventory
+     * Displays the list of available products in the inventory
      */
     public void showInventory() {}
 
