@@ -118,6 +118,6 @@ public class Product implements Comparable<Product> {
     }
 
     public void setmaxCapacity(int maxCapacity) {
-        maxCapacity = maxCapacity;
+        this.maxCapacity = maxCapacity;
     }
 }
