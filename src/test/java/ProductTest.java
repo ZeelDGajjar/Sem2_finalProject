@@ -35,9 +35,7 @@ public class ProductTest {
     @Test
     public void testBuy_OutOfStock() {
         Product product = new Product("Laptop", 1000.0, "Electronics", 0, 20);
-        Exception exception = assertThrows(IllegalStateException.class, () -> {
-            product.buy();
-        });
+        Exception exception = assertThrows(IllegalStateException.class, product::buy);
         assertTrue(exception.getMessage().contains("Product out of stock"));
     }
 
