@@ -1,9 +1,15 @@
 package org.example;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 public class Buyer extends User{
+    private List<Product> purchaseHistory;
 
     public Buyer(int id, String name) {
         super(id, name);
+        purchaseHistory = new ArrayList<Product>();
     }
 
     /**
@@ -32,8 +38,31 @@ public class Buyer extends User{
     @Override
     public void displayMessage(String message) {}
 
+    /**
+     * Adds product to purchase history of the user to retrieve typically in the VendingMachine class
+     * @param product the given product to add to the history of the user
+     */
+    public void addPurchaseHistory(Product product) {
+    }
+
     @Override
     public String toString() {
         return "Buyer{}" + super.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Buyer buyer = (Buyer) o;
+        return Objects.equals(purchaseHistory, buyer.purchaseHistory);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(purchaseHistory);
+    }
+
+    public List<Product> getPurchaseHistory() {
+        return purchaseHistory;
     }
 }
