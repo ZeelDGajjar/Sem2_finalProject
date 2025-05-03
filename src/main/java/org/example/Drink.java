@@ -5,8 +5,9 @@ import java.util.Objects;
 public class Drink extends Product{
     private int volumeInML;
 
-    public Drink(int volumeInML) {
-        this.volumeInML = volumeInML;
+    public Drink() {
+        super("", 0,"", 0, 5);
+        this.volumeInML = 0;
     }
 
     public Drink(String name, double price, String category, int stock, int MaxCapacity, int volumeInML) {

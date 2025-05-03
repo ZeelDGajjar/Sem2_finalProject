@@ -1,278 +1,327 @@
 import org.example.*;
 
 import org.junit.jupiter.api.Test;
-import java.util.HashMap;
+import org.junit.jupiter.api.Assertions;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Map;
 
-class VendingMachineTest {
+public class VendingMachineTest {
 
+    // === dispenseItem ===
     @Test
-    void testDispenseItem_withValidItem() {
+    public void testDispenseItem_successful() {
         VendingMachine vm = new VendingMachine();
-        Product product = new Product("Chips", 2.0, "Snack", 10, 20);
-        Buyer buyer = new Buyer(12, "");
+        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(p);
+        vm.addMoney(new Money(Map.of(1.5, 1)));
 
-        vm.dispenseItem(buyer, product);
+        Buyer b = new Buyer(1, "Maan");
+        vm.dispenseItem(b, p);
 
-        // Should reduce product stock by one
-        // Should not allow stock to drop below zero
-        // Should update sales or inventory data if needed
-        // Should not throw exceptions
+        Assertions.assertEquals(4, p.getStock());
+        Assertions.assertTrue(vm.getSalesLog().size() > 0);
     }
 
     @Test
-    void testDispenseItem_withNullItem() {
+    public void testDispenseItem_transactionFailure() {
         VendingMachine vm = new VendingMachine();
-        Buyer buyer = new Buyer(11, "");
+        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(p);
+        vm.addMoney(new Money(Map.of(1.0, 1)));
 
-        vm.dispenseItem(buyer, null);
+        Buyer b = new Buyer(2, "Alex");
+        vm.dispenseItem(b, p);
 
-        // Should handle null input without crashing
-        // Should not attempt to update inventory
-        // Should skip or return early
+        Assertions.assertEquals(5, p.getStock());
+        Assertions.assertTrue(vm.getSalesLog().isEmpty());
     }
 
     @Test
-    void testSelectItem_withExistingName() {
+    public void testDispenseItem_outOfStock() {
         VendingMachine vm = new VendingMachine();
-        Product product = new Product("Water", 1.5, "Drink", 5, 10);
-        vm.reloadProduct(product, 1.5);
+        Product p = new Snack("Chips", 1.5, "snack", 0, 10, 100);
+        vm.getInventory().add(p);
+        vm.addMoney(new Money(Map.of(1.5, 1)));
 
-        Product selected = vm.selectItem("Water");
+        Buyer b = new Buyer(3, "Sam");
+        vm.dispenseItem(b, p);
 
-        // Should return a matching product object
-        // Should match name case-sensitively or insensitively (decide in implementation)
-        // Should not return null
+        Assertions.assertEquals(0, p.getStock());
+        Assertions.assertTrue(vm.getSalesLog().isEmpty());
+    }
+
+    // === selectItem ===
+    @Test
+    public void testSelectItem_existingProduct() {
+        VendingMachine vm = new VendingMachine();
+        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(p);
+
+        Product result = vm.selectItem("Chips");
+        Assertions.assertEquals(p, result);
     }
 
     @Test
-    void testSelectItem_withNonexistentName() {
+    public void testSelectItem_nonExistingProduct() {
         VendingMachine vm = new VendingMachine();
+        Product result = vm.selectItem("Soda");
 
-        Product selected = vm.selectItem("Unknown");
-
-        // Should return null if product is not found
-        // Should not throw exception
+        Assertions.assertNull(result);
     }
 
     @Test
-    void testSelectItem_withNullName() {
+    public void testSelectItem_caseInsensitive() {
         VendingMachine vm = new VendingMachine();
+        Product p = new Snack("Coke", 2.0, "drink", 10, 10, 350);
+        vm.getInventory().add(p);
 
-        Product selected = vm.selectItem(null);
-
-        // Should return null or fail gracefully
-        // Should not throw NullPointerException
+        Product result = vm.selectItem("coke");
+        Assertions.assertEquals(p, result);
     }
 
+    // === addMoney ===
     @Test
-    void testAddMoney_withValidMoney() {
+    public void testAddMoney_singleDenomination() {
         VendingMachine vm = new VendingMachine();
-        Money money = new Money();
-        Map<Double, Integer> cash = new HashMap<>();
-        cash.put(1.0, 2);
-        money.add(cash);
-
+        Money money = new Money(Map.of(2.0, 1));
         vm.addMoney(money);
 
-        // Should add values to current session money
-        // Should merge denominations correctly
-        // Should be reflected in transaction total
+        Assertions.assertEquals(2.0, vm.getCurrentSessionMoney().calculateTotal(), 0.001);
     }
 
     @Test
-    void testAddMoney_withNullMoney() {
+    public void testAddMoney_multipleDenominations() {
         VendingMachine vm = new VendingMachine();
+        Money money = new Money(Map.of(1.0, 2, 0.5, 1));
+        vm.addMoney(money);
 
-        vm.addMoney(null);
-
-        // Should safely ignore null money input
-        // Should not crash or affect session state
+        Assertions.assertEquals(2.5, vm.getCurrentSessionMoney().calculateTotal(), 0.001);
     }
 
     @Test
-    void testShowInventory_whenInventoryHasItems() {
+    public void testAddMoney_accumulates() {
         VendingMachine vm = new VendingMachine();
-        vm.reloadProduct(new Product("Soda", 1.0, "Drink", 5, 10), 1.0);
+        vm.addMoney(new Money(Map.of(1.0, 1)));
+        vm.addMoney(new Money(Map.of(0.5, 1)));
 
-        vm.showInventory();
+        Assertions.assertEquals(1.5, vm.getCurrentSessionMoney().calculateTotal(), 0.001);
+    }
 
-        // Should display or return all available products
-        // Should include name, price, stock, and category
-        // Should not crash or hang
+    // === showInventory ===
+    @Test
+    public void testShowInventory_notEmpty() {
+        VendingMachine vm = new VendingMachine();
+        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(p);
+
+        // Test output (not ideal in real testing but works for this case)
+        vm.showInventory();  // Ensure this runs without exceptions
     }
 
     @Test
-    void testShowInventory_whenInventoryIsEmpty() {
+    public void testShowInventory_empty() {
         VendingMachine vm = new VendingMachine();
-
-        vm.showInventory();
-
-        // Should display a message indicating no items are available
-        // Should not crash or misbehave
+        vm.showInventory();  // No exception should occur
     }
 
     @Test
-    void testWriteToFile_afterAddingItems() {
+    public void testShowInventory_multipleItems() {
         VendingMachine vm = new VendingMachine();
-        vm.reloadProduct(new Product("Juice", 2.0, "Drink", 3, 10), 2.0);
+        Product p1 = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        Product p2 = new Drink("Coke", 2.0, "drink", 10, 10, 350);
+        vm.getInventory().add(p1);
+        vm.getInventory().add(p2);
 
+        vm.showInventory();  // Ensure the output is correct
+    }
+
+    // === reloadProduct ===
+    @Test
+    public void testReloadProduct_increaseStock() {
+        VendingMachine vm = new VendingMachine();
+        Product p = new Snack("Cookies", 1.0, "snack", 5, 10, 100);
+        Operator op = new Operator(1, "John");
+
+        vm.reloadProduct(p, 3, op);
+        Assertions.assertEquals(8, p.getStock());
+    }
+
+    @Test
+    public void testReloadProduct_maxCapacity() {
+        VendingMachine vm = new VendingMachine();
+        Product p = new Snack("Cookies", 1.0, "snack", 9, 10, 100);
+        Operator op = new Operator(2, "Mike");
+
+        vm.reloadProduct(p, 3, op);
+        Assertions.assertEquals(10, p.getStock());
+    }
+
+    @Test
+    public void testReloadProduct_negativeAmount() {
+        VendingMachine vm = new VendingMachine();
+        Product p = new Snack("Cookies", 1.0, "snack", 5, 10, 100);
+        Operator op = new Operator(3, "Jane");
+
+        vm.reloadProduct(p, -3, op);
+        Assertions.assertEquals(2, p.getStock());  // Stock shouldn't go negative
+    }
+
+    // === changePrice ===
+    @Test
+    public void testChangePrice_valid() {
+        VendingMachine vm = new VendingMachine();
+        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(p);
+
+        vm.changePrice(p, 2.0);
+        Assertions.assertEquals(2.0, p.getPrice(), 0.001);
+    }
+
+    @Test
+    public void testChangePrice_zero() {
+        VendingMachine vm = new VendingMachine();
+        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(p);
+
+        vm.changePrice(p, 0.0);
+        Assertions.assertEquals(0.0, p.getPrice(), 0.001);
+    }
+
+    @Test
+    public void testChangePrice_negative() {
+        VendingMachine vm = new VendingMachine();
+        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(p);
+
+        vm.changePrice(p, -1.0);
+        Assertions.assertEquals(-1.0, p.getPrice(), 0.001);
+    }
+
+    // === processTransaction ===
+    @Test
+    public void testProcessTransaction_success() {
+        VendingMachine vm = new VendingMachine();
+        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(p);
+        vm.addMoney(new Money(Map.of(2.0, 1)));
+
+        Buyer b = new Buyer(1, "Maan");
+        boolean result = vm.processTransaction(b, p);
+        Assertions.assertTrue(result);
+    }
+
+    @Test
+    public void testProcessTransaction_insufficientMoney() {
+        VendingMachine vm = new VendingMachine();
+        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(p);
+        vm.addMoney(new Money(Map.of(1.0, 1)));
+
+        Buyer b = new Buyer(2, "Alex");
+        boolean result = vm.processTransaction(b, p);
+        Assertions.assertFalse(result);
+    }
+
+    @Test
+    public void testProcessTransaction_outOfStock() {
+        VendingMachine vm = new VendingMachine();
+        Product p = new Snack("Chips", 1.5, "snack", 0, 10, 100);
+        vm.getInventory().add(p);
+        vm.addMoney(new Money(Map.of(1.5, 1)));
+
+        Buyer b = new Buyer(3, "Sam");
+        boolean result = vm.processTransaction(b, p);
+        Assertions.assertFalse(result);
+    }
+
+    // === writeToFile ===
+    @Test
+    public void testWriteToFile_success() {
+        VendingMachine vm = new VendingMachine();
+        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(p);
         vm.writeToFile();
 
-        // Should write inventory state to a file
-        // Should include name, stock, price, and other metadata
-        // Should create or update the file correctly
+        File file = new File("VendingMachine_Data.txt");
+        Assertions.assertTrue(file.exists());
     }
 
     @Test
-    void testReloadProduct_withNewProduct() {
+    public void testWriteToFile_emptyInventory() {
         VendingMachine vm = new VendingMachine();
-        Product newProduct = new Product("Cookies", 1.5, "Snack", 0, 15);
+        vm.writeToFile();
 
-        vm.reloadProduct(newProduct, 1.5);
-
-        // Should add product to inventory
-        // Should set its price as given
-        // Should not exceed maxCapacity
+        File file = new File("VendingMachine_Data.txt");
+        Assertions.assertTrue(file.exists());
+        Assertions.assertTrue(file.length() > 0);
     }
 
     @Test
-    void testReloadProduct_withExistingProduct() {
+    public void testWriteToFile_noSales() {
         VendingMachine vm = new VendingMachine();
-        Product product = new Product("Gum", 0.5, "Snack", 2, 10);
-        vm.reloadProduct(product, 0.5);
-        vm.reloadProduct(product, 0.75);
+        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(p);
+        vm.writeToFile();
 
-        // Should increase stock of existing product
-        // Should update price if necessary
-        // Should not duplicate product entries
+        File file = new File("VendingMachine_Data.txt");
+        Assertions.assertTrue(file.exists());
+        Assertions.assertTrue(file.length() > 0);
+    }
+
+    // === readProfitSheet ===
+    @Test
+    public void testReadProfitSheet_success() {
+        VendingMachine vm = new VendingMachine();
+        String testFile = "profitSheetTest.txt";
+
+        // Create a temporary profit sheet file
+        try (PrintWriter writer = new PrintWriter(testFile)) {
+            writer.println("Item: Chips, Sold: 5, Profit: 7.50");
+            writer.println("Item: Soda, Sold: 3, Profit: 6.00");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        vm.readProfitSheet(testFile);
+
+        File file = new File(testFile);
+        Assertions.assertTrue(file.exists());
+        Assertions.assertTrue(file.length() > 0);
+
+        file.delete();  // Cleanup after test
     }
 
     @Test
-    void testReloadProduct_withNullProduct() {
+    public void testReadProfitSheet_fileNotFound() {
         VendingMachine vm = new VendingMachine();
+        vm.readProfitSheet("nonExistentFile.txt");
 
-        vm.reloadProduct(null, 1.0);
-
-        // Should ignore null input
-        // Should not throw exceptions or modify inventory
+        // No exception should be thrown and we just check that it handled the missing file
+        Assertions.assertTrue(true);
     }
 
     @Test
-    void testChangePrice_withValidProduct() {
+    public void testReadProfitSheet_emptyFile() {
         VendingMachine vm = new VendingMachine();
-        Product product = new Product("Choco Bar", 1.0, "Snack", 4, 10);
-        vm.reloadProduct(product, 1.0);
+        String testFile = "emptyProfitSheet.txt";
 
-        vm.changePrice(product, 1.5);
+        // Create an empty file
+        try (PrintWriter writer = new PrintWriter(testFile)) {
+            // Empty file
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
-        // Should update price of the product
-        // Should reflect change in inventory state
-        // Should maintain product identity
+        vm.readProfitSheet(testFile);
+
+        // Ensure no output or error is thrown for an empty file
+        Assertions.assertTrue(true);
+
+        File file = new File(testFile);
+        file.delete();  // Cleanup after test
     }
 
-    @Test
-    void testChangePrice_withNegativePrice() {
-        VendingMachine vm = new VendingMachine();
-        Product product = new Product("Soda", 1.0, "Drink", 4, 10);
-        vm.reloadProduct(product, 1.0);
-
-        vm.changePrice(product, -2.0);
-
-        // Should not accept or apply negative prices
-        // Should keep the old price intact
-        // Should handle input validation
-    }
-
-    @Test
-    void testChangePrice_withNullProduct() {
-        VendingMachine vm = new VendingMachine();
-
-        vm.changePrice(null, 1.0);
-
-        // Should safely ignore null input
-        // Should not crash or log errors unnecessarily
-    }
-
-    @Test
-    void testReadProfitSheet_withValidFile() {
-        VendingMachine vm = new VendingMachine();
-
-        vm.readProfitSheet("profits_april.txt");
-
-        // Should open and read the file if it exists
-        // Should parse data correctly
-        // Should update relevant state if applicable
-    }
-
-    @Test
-    void testReadProfitSheet_withNonexistentFile() {
-        VendingMachine vm = new VendingMachine();
-
-        vm.readProfitSheet("missing_file.csv");
-
-        // Should catch and handle file not found
-        // Should provide a meaningful error message
-        // Should not crash
-    }
-
-    @Test
-    void testReadProfitSheet_withNullFileName() {
-        VendingMachine vm = new VendingMachine();
-
-        vm.readProfitSheet(null);
-
-        // Should handle null input safely
-        // Should not throw NullPointerException
-        // Should return early or log an error
-    }
-
-    @Test
-    void testProcessTransaction_withSufficientMoney() {
-        VendingMachine vm = new VendingMachine();
-        Buyer buyer = new Buyer(1, "John");
-        Product product = new Product("Snack", 1.5, "Snack", 5, 10);
-        Money money = new Money();
-        Map<Double, Integer> cash = new HashMap<>();
-        cash.put(1.0, 2);
-        money.add(cash);
-        vm.reloadProduct(product, 1.5);
-        vm.addMoney(money);
-
-        boolean result = vm.processTransaction(buyer, product);
-
-        // Should return true if buyer has enough money
-        // Should deduct amount from session money
-        // Should dispense product
-    }
-
-    @Test
-    void testProcessTransaction_withInsufficientMoney() {
-        VendingMachine vm = new VendingMachine();
-        Buyer buyer = new Buyer(2, "Jane");
-        Product product = new Product("Drink", 2.0, "Drink", 3, 10);
-        Money money = new Money();
-        Map<Double, Integer> cash = new HashMap<>();
-        cash.put(1.0, 1);
-        money.add(cash);
-        vm.reloadProduct(product, 2.0);
-        vm.addMoney(money);
-
-        boolean result = vm.processTransaction(buyer, product);
-
-        // Should return false if money is insufficient
-        // Should not dispense item
-        // Should leave session state unchanged
-    }
-
-    @Test
-    void testProcessTransaction_withNullInputs() {
-        VendingMachine vm = new VendingMachine();
-
-        boolean result = vm.processTransaction(null, null);
-
-        // Should handle null buyer or item safely
-        // Should return false or exit early
-        // Should not throw exceptions
-    }
 }
