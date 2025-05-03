@@ -92,6 +92,13 @@ public class Money {
         return total;
     }
 
+    /**
+     * Method to clear out the money after each session in Vending Machine to maintain the amount of money to return.
+     */
+    public void clear() {
+        this.cashMap.clear();
+    }
+
     @Override
     public String toString() {
         return "Money{" + "cashMap=" + cashMap + '}';
