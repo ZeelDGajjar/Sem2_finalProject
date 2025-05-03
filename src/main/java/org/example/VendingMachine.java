@@ -9,17 +9,20 @@ public class VendingMachine implements TransactionHandler{
     private List<User> users;
     private List<Product> inventory;
     private Money currentSessionMoney;
+    private List<String> salesLog;
 
     public VendingMachine() {
         users = new ArrayList<User>();
         inventory = new LinkedList<>();
         currentSessionMoney = new Money();
+        salesLog = new ArrayList<>();
     }
 
     public VendingMachine(List<User> users, List<Product> inventory, Money currentSessionMoney) {
         this.users = users;
         this.inventory = inventory;
         this.currentSessionMoney = currentSessionMoney;
+        salesLog = new ArrayList<>();
     }
 
     /**
@@ -31,6 +34,9 @@ public class VendingMachine implements TransactionHandler{
         if (processTransaction(buyer, item) && inventory.contains(item) && item.getStock() > 0) {
             item.setStock(item.getStock() - 1);
             System.out.println(item.getName() + " has been dispensed");
+
+            String log = String.format("%s - %s sold for $%.2f", new Date(), item.getName(), item.getPrice());
+            salesLog.add(log);
         } else {
             System.out.println(item.getName() + " has not been dispensed due to Transaction failure or item unavailability");
         }
@@ -71,13 +77,17 @@ public class VendingMachine implements TransactionHandler{
      * @param item The product to be reloaded into inventory
      * @param amount The amount of item to add
      */
-    public void reloadProduct(Product item, int amount) {
+    public void reloadProduct(Product item, int amount, Operator operator) {
         int newStock = Math.min(item.getStock() + amount, item.getMaxCapacity());
         item.setStock(newStock);
 
         if (!inventory.contains(item)) {
             inventory.add(item);
         }
+
+        operator.getStockingHistory().put(item,amount);
+
+        System.out.println("Product reloaded: " + item.getName() + "by" + amount + " units.");
     }
 
     /**
@@ -120,28 +130,47 @@ public class VendingMachine implements TransactionHandler{
      * @param fileName The name of the file containing profit information
      */
     public void readProfitSheet(String fileName) {
-        try (Scanner scanner = new Scanner(new File(fileName))) {
-            System.out.println("=== Profit Sheet ===");
+        File file = new File(fileName);
+        if (!file.exists()) {
+            System.out.println("Profit sheet file not found: " + fileName);
+            return;
+        }
+
+        System.out.println("=== PROFIT SHEET: " + fileName + " ===");
+        try (Scanner scanner = new Scanner(file)) {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 System.out.println(line);
             }
         } catch (FileNotFoundException e) {
-            System.out.println("Could not read profit sheet from file: " + fileName);
+            System.out.println("Error reading profit sheet: " + e.getMessage());
         }
     }
 
     /**
-     * Writes vending machine inventory and sales data to a file for record-keeping
+     * Writes vending machine inventory stocking and sales data to a file for record-keeping
      */
     public void writeToFile() {
-        try (PrintWriter writer = new PrintWriter("Inventory_data.txt")) {
+        try (PrintWriter writer = new PrintWriter("VendingMachine_Data.txt")) {
+
+            writer.println("=== INVENTORY ===");
             for (Product item : inventory) {
-                writer.println(item.getName() + "," + item.getPrice() + "," + item.getStock());
+                writer.printf("%s,%.2f,%d%n", item.getName(), item.getPrice(), item.getStock());
             }
-            System.out.println("Inventory written to file.");
+
+            writer.println("\n=== TRANSACTIONS ===");
+            if (salesLog != null && !salesLog.isEmpty()) {
+                for (String logEntry : salesLog) {
+                    writer.println(logEntry);
+                }
+            } else {
+                writer.println("No transactions recorded.");
+            }
+
+            System.out.println("Vending machine data written to file.");
+
         } catch (FileNotFoundException e) {
-            System.out.println("Could not write inventory to file. Please check the file path.");
+            System.out.println("Could not write to file. Please check the file path.");
         }
     }
 
@@ -151,6 +180,7 @@ public class VendingMachine implements TransactionHandler{
                 "users=" + users +
                 ", inventory=" + inventory +
                 ", currentSessionMoney=" + currentSessionMoney +
+                ", salesLog=" + salesLog +
                 '}';
     }
 
@@ -158,12 +188,12 @@ public class VendingMachine implements TransactionHandler{
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         VendingMachine that = (VendingMachine) o;
-        return Objects.equals(users, that.users) && Objects.equals(inventory, that.inventory) && Objects.equals(currentSessionMoney, that.currentSessionMoney);
+        return Objects.equals(users, that.users) && Objects.equals(inventory, that.inventory) && Objects.equals(currentSessionMoney, that.currentSessionMoney) && Objects.equals(salesLog, that.salesLog);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(users, inventory, currentSessionMoney);
+        return Objects.hash(users, inventory, currentSessionMoney, salesLog);
     }
 
     public List<User> getUsers() {
@@ -188,5 +218,13 @@ public class VendingMachine implements TransactionHandler{
 
     public void setCurrentSessionMoney(Money currentSessionMoney) {
         this.currentSessionMoney = currentSessionMoney;
+    }
+
+    public List<String> getSalesLog() {
+        return salesLog;
+    }
+
+    public void setSalesLog(List<String> salesLog) {
+        this.salesLog = salesLog;
     }
 }
