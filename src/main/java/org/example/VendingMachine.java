@@ -87,7 +87,7 @@ public class VendingMachine implements TransactionHandler{
 
         operator.getStockingHistory().put(item,amount);
 
-        System.out.println("Product reloaded: " + item.getName() + "by" + amount + " units.");
+        System.out.println("Product reloaded: " + item.getName() + " by " + amount + " units.");
     }
 
     /**
