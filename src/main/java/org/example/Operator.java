@@ -7,6 +7,13 @@ public class Operator extends User {
     private List<String> profitSheets;
     private Map<Product, Integer> stockingHistory;
 
+    public Operator() {
+        super(getNextId() + 1, "");
+        profitSheets = new ArrayList<String>();
+        accessLevel = "";
+        stockingHistory = new LinkedHashMap<>();
+    }
+
     public Operator(int id, String name) {
         super(id, name);
         profitSheets = new ArrayList<String>();

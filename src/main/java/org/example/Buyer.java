@@ -11,6 +11,7 @@ public class Buyer extends User{
     public Buyer() {
         super(getNextId() + 1, "");
         purchaseHistory = new ArrayList<>();
+        this.selectedProduct = null;
     }
 
     public Buyer(int id, String name) {
@@ -22,11 +23,25 @@ public class Buyer extends User{
     /**
      * Allows the buyer to choose a product by its name from the vending machine inventory
      * @param name The name of the product the buyer wants to select
+     * @param products The list of products available for selection
      * @return The selected Product if found; otherwise, null
      */
     public Product chooseProduct(String name, List<Product> products) {
-        return products.stream()
-                .filter(product -> product.getName().equals(name)).findFirst().orElse(null);
+        if (products == null || products.isEmpty()) {
+            displayMessage("The product list is empty or not available.");
+            return null;
+        }
+
+        Product found = products.stream()
+                .filter(product -> product.getName().equals(name))
+                .findFirst()
+                .orElseGet(() -> {
+                    displayMessage("No such product found");
+                    return null;
+                });
+
+        this.selectedProduct = found;
+        return found;
     }
 
     /**
@@ -34,8 +49,8 @@ public class Buyer extends User{
      */
     public void cancelOrder() {
         if (selectedProduct != null) {
-            selectedProduct = null;
             System.out.println(selectedProduct.getName() + " has been cancelled.");
+            selectedProduct = null;
         }
         displayMessage("No products selected to cancel.");
     }
