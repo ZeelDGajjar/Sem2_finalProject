@@ -9,7 +9,7 @@ public class Buyer extends User{
     private final List<Product> purchaseHistory;
 
     public Buyer() {
-        super(getNextId() + 1, "");
+        super(getNextId(), "Unknown Buyer");
         purchaseHistory = new ArrayList<>();
         this.selectedProduct = null;
     }

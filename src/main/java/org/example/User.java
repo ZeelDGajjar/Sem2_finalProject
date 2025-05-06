@@ -6,6 +6,16 @@ public abstract class User implements MessageDisplay {
 
     private static int nextId = 0;
 
+    public User() {
+        this.id = nextId++;
+        this.name = "Unknown User";
+    }
+
+    public User(String name) {
+        this.id = nextId++;
+        this.name = name;
+    }
+
     public User(int id, String name) {
         this.id = nextId++;
         this.name = name;

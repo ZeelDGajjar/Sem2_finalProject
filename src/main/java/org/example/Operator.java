@@ -1,27 +1,28 @@
 package org.example;
 
+import java.nio.file.Path;
 import java.util.*;
 
 public class Operator extends User {
     private AccessLevel accessLevel;
-    private List<String> profitSheets;
+    private List<Path> profitSheets;
     private Map<Product, Integer> stockingHistory;
 
     public Operator() {
-        super(getNextId() + 1, "");
-        profitSheets = new ArrayList<String>();
+        super(getNextId(), "Unknown Operator");
+        profitSheets = new ArrayList<>();
         accessLevel = AccessLevel.STAFF;
         stockingHistory = new LinkedHashMap<>();
     }
 
     public Operator(int id, String name) {
         super(id, name);
-        profitSheets = new ArrayList<String>();
+        profitSheets = new ArrayList<Path>();
         accessLevel = AccessLevel.STAFF;
         stockingHistory = new LinkedHashMap<>();
     }
 
-    public Operator(int id, String name, AccessLevel accessLevel, List<String> profitSheets) {
+    public Operator(int id, String name, AccessLevel accessLevel, List<Path> profitSheets) {
         super(id, name);
         this.accessLevel = accessLevel;
         this.profitSheets = profitSheets;
@@ -33,10 +34,9 @@ public class Operator extends User {
      * @param item The product to be restored
      * @param amount The number of units to add to the inventory
      */
-    public void restockProduct(Product item, int amount, VendingMachine vendingMachine) {
-        item.setStock(amount);
+    public void restockProduct(Product item, int amount) {
+        item.setStock(item.getStock() + amount);
         stockingHistory.put(item, amount);
-        vendingMachine.writeToFile();
     }
 
     /**
@@ -44,13 +44,17 @@ public class Operator extends User {
      * @param item The product whose price is being updates
      * @param price The new price to assign to the product
      */
-    public void updateProductPrice(Product item, double price, AccessLevel accessLevel) {
-        if (accessLevel == AccessLevel.ADMIN) {
-            item.setPrice(price);
+    public void updateProductPrice(Product item, double price) {
+        if (this.accessLevel != AccessLevel.ADMIN) {
+            displayMessage("Access denied");
             return;
         }
 
-        displayMessage("You do not have access to perform this operation.");
+        if (price < 0) {
+            throw new IllegalArgumentException("Price cannot be negative");
+        }
+
+        item.setPrice(price);
     }
 
     /**
@@ -58,7 +62,9 @@ public class Operator extends User {
      * @param vendingMachine The vending machine whose profit sheet needs to be reviewed
      */
     public void reviewProfitSheet(VendingMachine vendingMachine) {
-        vendingMachine.readProfitSheet("../resources/ProfitSheet.txt");
+        Path filename = Path.of("../resources/ProfitSheet.txt");
+        vendingMachine.readProfitSheet(filename);
+        profitSheets.add(filename);
     }
 
     /**
@@ -99,11 +105,11 @@ public class Operator extends User {
         this.accessLevel = accessLevel;
     }
 
-    public List<String> getProfitSheets() {
+    public List<Path> getProfitSheets() {
         return profitSheets;
     }
 
-    public void setProfitSheets(List<String> profitSheets) {
+    public void setProfitSheets(List<Path> profitSheets) {
         this.profitSheets = profitSheets;
     }
 

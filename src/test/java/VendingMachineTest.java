@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.Map;
 
 public class VendingMachineTest {
@@ -174,8 +175,9 @@ public class VendingMachineTest {
         VendingMachine vm = new VendingMachine();
         Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
         vm.getInventory().add(p);
+        Operator operator = new Operator(1, "John");
 
-        vm.changePrice(p, 2.0);
+        vm.changePrice(p, 2.0, operator);
         Assertions.assertEquals(2.0, p.getPrice(), 0.001);
     }
 
@@ -184,8 +186,9 @@ public class VendingMachineTest {
         VendingMachine vm = new VendingMachine();
         Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
         vm.getInventory().add(p);
+        Operator operator = new Operator(1, "John");
 
-        vm.changePrice(p, 0.0);
+        vm.changePrice(p, 0.0, operator);
         Assertions.assertEquals(0.0, p.getPrice(), 0.001);
     }
 
@@ -194,8 +197,9 @@ public class VendingMachineTest {
         VendingMachine vm = new VendingMachine();
         Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
         vm.getInventory().add(p);
+        Operator operator = new Operator(1, "John");
 
-        vm.changePrice(p, -1.0);
+        vm.changePrice(p, -1.0, operator);
         Assertions.assertEquals(-1.0, p.getPrice(), 0.001);
     }
 
@@ -284,7 +288,7 @@ public class VendingMachineTest {
             e.printStackTrace();
         }
 
-        vm.readProfitSheet(testFile);
+        vm.readProfitSheet(Path.of(testFile));
 
         File file = new File(testFile);
         Assertions.assertTrue(file.exists());
@@ -296,7 +300,7 @@ public class VendingMachineTest {
     @Test
     public void testReadProfitSheet_fileNotFound() {
         VendingMachine vm = new VendingMachine();
-        vm.readProfitSheet("nonExistentFile.txt");
+        vm.readProfitSheet(Path.of("nonExistentFile.txt"));
 
         // No exception should be thrown and we just check that it handled the missing file
         Assertions.assertTrue(true);
@@ -314,7 +318,7 @@ public class VendingMachineTest {
             e.printStackTrace();
         }
 
-        vm.readProfitSheet(testFile);
+        vm.readProfitSheet(Path.of(testFile));
 
         // Ensure no output or error is thrown for an empty file
         Assertions.assertTrue(true);

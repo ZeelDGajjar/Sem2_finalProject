@@ -3,6 +3,7 @@ package org.example;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.*;
 
 public class VendingMachine implements TransactionHandler{
@@ -133,8 +134,8 @@ public class VendingMachine implements TransactionHandler{
      * Reads and processes the profit sheet from a specified file
      * @param fileName The name of the file containing profit information
      */
-    public void readProfitSheet(String fileName) {
-        File file = new File(fileName);
+    public void readProfitSheet(Path fileName) {
+        File file = new File(String.valueOf(fileName));
         if (!file.exists()) {
             System.out.println("Profit sheet file not found: " + fileName);
             return;
