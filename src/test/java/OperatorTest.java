@@ -7,8 +7,8 @@ class OperatorTest {
     void testRestoreProduct_withValidAmount() {
         Operator operator = new Operator(1, "Op1");
         Product product = new Product("Chips", 2.0, "Snack", 5, 20);
-
-        operator.restoreProduct(product, 10);
+        VendingMachine vendingMachine = new VendingMachine();
+        operator.restockProduct(product, 10, vendingMachine);
 
         // Should add the specified quantity to product's stock
         // Should ensure stock does not exceed max capacity

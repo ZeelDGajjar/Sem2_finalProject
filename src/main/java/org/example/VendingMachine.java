@@ -95,8 +95,12 @@ public class VendingMachine implements TransactionHandler{
      * @param item The product whose price is to be updated
      * @param price The new price for the product
      */
-    public void changePrice(Product item, double price) {
-        item.setPrice(price);
+    public void changePrice(Product item, double price, Operator operator) {
+        if (operator.getAccessLevel() == AccessLevel.ADMIN) {
+            item.setPrice(price);
+            return;
+        }
+        System.out.println("You don't have access to perform this operation");
     }
 
     /**
