@@ -17,6 +17,14 @@ public class Product implements Comparable<Product> {
         this.maxCapacity = maxCapacity;
     }
 
+    public Product() {
+        this.name = "Unnamed Product";
+        this.price = 0;
+        this.category = "Unknown";
+        this.stock = 0;
+        this.maxCapacity = 5;
+    }
+
     /**
      * Reloads the stock, ensuring it does not exceed the maximum capacity.
      * @param amount The amount to add to the stock

@@ -13,7 +13,7 @@ public class VendingMachine implements TransactionHandler{
     private List<String> salesLog;
 
     public VendingMachine() {
-        users = new ArrayList<User>();
+        users = new ArrayList<>();
         inventory = new LinkedList<>();
         currentSessionMoney = new Money();
         salesLog = new ArrayList<>();
@@ -27,7 +27,7 @@ public class VendingMachine implements TransactionHandler{
     }
 
     /**
-     * Despenses selected item once the transaction is successfully completed
+     * Dispenses selected item once the transaction is successfully completed
      * @param buyer the buyer doing the performance
      * @param item the item to dispense
      */

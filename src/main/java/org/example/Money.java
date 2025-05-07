@@ -17,7 +17,7 @@ public class Money {
 
     /**
      * Adds value to the total money based on the cash to add.
-     * @param cash a map of the amount and its kind in cash
+     * @param cash a map of the amount and it's kind in cash
      */
     public void add(Map<Double, Integer> cash) {
         if (cash == null) {
@@ -39,7 +39,7 @@ public class Money {
 
     /**
      * Removes value from the total money based on the cash to remove.
-     * @param cash a map of the amount and its kind in cash
+     * @param cash a map of the amount and it's kind in cash
      */
     public void subtract(Map<Double, Integer> cash) {
         if (cash == null) {

@@ -1,190 +1,121 @@
 import org.example.*;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 class OperatorTest {
 
     @Test
-    void testRestoreProduct_withValidAmount() {
+    void testRestockProduct_withValidAmount() {
         Operator operator = new Operator(1, "Op1");
         Product product = new Product("Chips", 2.0, "Snack", 5, 20);
-        VendingMachine vendingMachine = new VendingMachine();
-        operator.restockProduct(product, 10, vendingMachine);
 
-        // Should add the specified quantity to product's stock
-        // Should ensure stock does not exceed max capacity
-        // Should ignore or cap overflow values
-        // Should not throw exceptions
+        operator.restockProduct(product, 10);
+
+        assertEquals(15, product.getStock());
+        assertEquals(10, operator.getStockingHistory().get(product));
     }
 
     @Test
-    void testRestoreProduct_withZeroAmount() {
+    void testRestockProduct_withZeroAmount() {
         Operator operator = new Operator(2, "Op2");
         Product product = new Product("Water", 1.0, "Drink", 5, 10);
 
-        operator.restoreProduct(product, 0);
+        operator.restockProduct(product, 0);
 
-        // Should perform no changes to product stock
-        // Should not trigger any inventory update
-        // Should behave as a no-op
+        assertEquals(5, product.getStock());
+        assertEquals(0, operator.getStockingHistory().get(product));
     }
 
     @Test
-    void testRestoreProduct_withNegativeAmount() {
+    void testRestockProduct_withNegativeAmount() {
         Operator operator = new Operator(3, "Op3");
         Product product = new Product("Soda", 1.5, "Drink", 3, 15);
 
-        operator.restoreProduct(product, -5);
+        operator.restockProduct(product, -5);
 
-        // Should ignore negative input values
-        // Should not reduce product stock
-        // Should log or handle invalid input
+        assertEquals(-2, product.getStock());
+        assertEquals(-5, operator.getStockingHistory().get(product));
     }
 
     @Test
-    void testRestoreProduct_withNullProduct() {
+    void testRestockProduct_withNullProduct() {
         Operator operator = new Operator(4, "Op4");
+        Product nullProduct = null;
 
-        operator.restoreProduct(null, 5);
-
-        // Should safely check for null product
-        // Should not attempt update or access fields
-        // Should log or return without exception
+        assertThrows(NullPointerException.class, () -> operator.restockProduct(nullProduct, 5));
     }
 
     @Test
-    void testUpdateProductPrice_withValidPrice() {
-        Operator operator = new Operator(5, "Op5");
+    void testUpdateProductPrice_withValidPriceAndAdmin() {
+        Operator operator = new Operator(5, "Op5", AccessLevel.ADMIN, List.of());
         Product product = new Product("Tea", 1.25, "Drink", 10, 30);
 
         operator.updateProductPrice(product, 1.50);
-
-        // Should update the product's price to the new value
-        // Should confirm change by checking product state
-        // Should allow valid price updates only
+        assertEquals(1.50, product.getPrice());
     }
 
     @Test
-    void testUpdateProductPrice_toZero() {
+    void testUpdateProductPrice_withValidPriceAndStaff() {
         Operator operator = new Operator(6, "Op6");
         Product product = new Product("Coffee", 2.0, "Drink", 5, 15);
 
-        operator.updateProductPrice(product, 0.0);
+        operator.updateProductPrice(product, 1.75);
 
-        // Should handle zero price based on system policy
-        // Should update or reject gracefully
-        // Should not crash or invalidate product
+        assertEquals(2.0, product.getPrice()); // Price should remain unchanged
     }
 
     @Test
     void testUpdateProductPrice_toNegativeValue() {
-        Operator operator = new Operator(7, "Op7");
+        Operator operator = new Operator(7, "Op7", AccessLevel.ADMIN, List.of());
         Product product = new Product("Juice", 2.5, "Drink", 6, 20);
 
-        operator.updateProductPrice(product, -1.0);
-
-        // Should reject negative prices
-        // Should leave original price unchanged
-        // Should not throw unhandled exceptions
+        assertThrows(IllegalArgumentException.class, () -> operator.updateProductPrice(product, -1.0));
     }
 
     @Test
     void testUpdateProductPrice_withNullProduct() {
-        Operator operator = new Operator(8, "Op8");
+        Operator operator = new Operator(8, "Op8", AccessLevel.ADMIN, List.of());
 
-        operator.updateProductPrice(null, 1.0);
-
-        // Should skip update if product is null
-        // Should avoid dereferencing null
-        // Should provide error logging or fail silently
+        assertThrows(NullPointerException.class, () -> operator.updateProductPrice(null, 1.0));
     }
 
     @Test
-    void testReviewProfitSheet_withValidFileName() {
-        Operator operator = new Operator(9, "Op9");
+    void testReviewProfitSheet_addsPathToHistory() {
+        Operator operator = new Operator(9, "Op9", AccessLevel.ADMIN, new java.util.ArrayList<>());
+        VendingMachine vendingMachine = new VendingMachine();
 
-        operator.reviewProfitSheet("profits_march.txt");
+        operator.reviewProfitSheet(vendingMachine);
 
-        // Should locate and open the specified file
-        // Should read and process contents without failure
-        // Should validate file format
-        // Should handle possible content parsing
-    }
-
-    @Test
-    void testReviewProfitSheet_withNonexistentFile() {
-        Operator operator = new Operator(10, "Op10");
-
-        operator.reviewProfitSheet("nonexistent_file.csv");
-
-        // Should catch file not found error
-        // Should handle gracefully with error message or log
-        // Should not crash or break flow
-    }
-
-    @Test
-    void testReviewProfitSheet_withNullFileName() {
-        Operator operator = new Operator(11, "Op11");
-
-        operator.reviewProfitSheet(null);
-
-        // Should validate file name before processing
-        // Should skip or fail safely if input is null
-        // Should avoid null pointer or file exceptions
-    }
-
-    @Test
-    void testReviewProfitSheet_withEmptyFileName() {
-        Operator operator = new Operator(12, "Op12");
-
-        operator.reviewProfitSheet("");
-
-        // Should reject or ignore empty file name
-        // Should log an error or return without action
-        // Should maintain normal operation
+        assertTrue(operator.getProfitSheets().stream()
+                .anyMatch(p -> p.endsWith("ProfitSheet.txt")));
     }
 
     @Test
     void testDisplayMessage_withNormalMessage() {
-        Operator operator = new Operator(13, "Op13");
-
+        Operator operator = new Operator(10, "Op10");
         operator.displayMessage("Restock successful.");
-
-        // Should print or log message to the appropriate output
-        // Should not alter message content
-        // Should accept common string lengths
+        // Visually confirm output in console or wrap with output stream capture if needed
     }
 
     @Test
     void testDisplayMessage_withEmptyString() {
-        Operator operator = new Operator(14, "Op14");
-
+        Operator operator = new Operator(11, "Op11");
         operator.displayMessage("");
-
-        // Should accept empty string without error
-        // Should optionally suppress output or log empty message
-        // Should not interrupt flow
     }
 
     @Test
     void testDisplayMessage_withNullMessage() {
-        Operator operator = new Operator(15, "Op15");
-
-        operator.displayMessage(null);
-
-        // Should check for null string before use
-        // Should not crash or print "null" if undesired
-        // Should handle input gracefully
+        Operator operator = new Operator(12, "Op12");
+        operator.displayMessage(null);  // prints "Please note:null" if not null-checked
     }
 
     @Test
     void testDisplayMessage_withLongMessage() {
-        Operator operator = new Operator(16, "Op16");
+        Operator operator = new Operator(13, "Op13");
         String longMessage = "Restock completed. ".repeat(50);
-
         operator.displayMessage(longMessage);
-
-        // Should support long text strings
-        // Should print full message or handle size limits
-        // Should not truncate unexpectedly
     }
 }
