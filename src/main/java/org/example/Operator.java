@@ -17,7 +17,7 @@ public class Operator extends User {
 
     public Operator(int id, String name) {
         super(id, name);
-        profitSheets = new ArrayList<Path>();
+        profitSheets = new ArrayList<>();
         accessLevel = AccessLevel.STAFF;
         stockingHistory = new LinkedHashMap<>();
     }
@@ -68,7 +68,7 @@ public class Operator extends User {
     }
 
     /**
-     * Displays a custom message intended for the operator. e.g.: Successful restock into the system, etc..
+     * Displays a custom message intended for the operator. e.g.: Successful restock into the system, etc...
      * @param message The message to be displayed
      */
     @Override
