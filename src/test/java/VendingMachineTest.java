@@ -18,11 +18,11 @@ public class VendingMachineTest {
         vm.getInventory().add(p);
         vm.addMoney(new Money(Map.of(1.5, 1)));
 
-        Buyer b = new Buyer(1, "Maan");
+        Buyer b = new Buyer("John");
         vm.dispenseItem(b, p);
 
         Assertions.assertEquals(4, p.getStock());
-        Assertions.assertTrue(vm.getSalesLog().size() > 0);
+        Assertions.assertFalse(vm.getSalesLog().isEmpty());
     }
 
     @Test
@@ -32,7 +32,7 @@ public class VendingMachineTest {
         vm.getInventory().add(p);
         vm.addMoney(new Money(Map.of(1.0, 1)));
 
-        Buyer b = new Buyer(2, "Alex");
+        Buyer b = new Buyer("Alex");
         vm.dispenseItem(b, p);
 
         Assertions.assertEquals(5, p.getStock());
@@ -46,7 +46,7 @@ public class VendingMachineTest {
         vm.getInventory().add(p);
         vm.addMoney(new Money(Map.of(1.5, 1)));
 
-        Buyer b = new Buyer(3, "Sam");
+        Buyer b = new Buyer("Sam");
         vm.dispenseItem(b, p);
 
         Assertions.assertEquals(0, p.getStock());
@@ -117,14 +117,13 @@ public class VendingMachineTest {
         Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
         vm.getInventory().add(p);
 
-        // Test output (not ideal in real testing but works for this case)
-        vm.showInventory();  // Ensure this runs without exceptions
+        vm.showInventory();
     }
 
     @Test
     public void testShowInventory_empty() {
         VendingMachine vm = new VendingMachine();
-        vm.showInventory();  // No exception should occur
+        vm.showInventory();
     }
 
     @Test
@@ -135,7 +134,7 @@ public class VendingMachineTest {
         vm.getInventory().add(p1);
         vm.getInventory().add(p2);
 
-        vm.showInventory();  // Ensure the output is correct
+        vm.showInventory();
     }
 
     // === reloadProduct ===
@@ -143,7 +142,7 @@ public class VendingMachineTest {
     public void testReloadProduct_increaseStock() {
         VendingMachine vm = new VendingMachine();
         Product p = new Snack("Cookies", 1.0, "snack", 5, 10, 100);
-        Operator op = new Operator(1, "John");
+        Operator op = new Operator("John", AccessLevel.STAFF);
 
         vm.reloadProduct(p, 3, op);
         Assertions.assertEquals(8, p.getStock());
@@ -153,7 +152,7 @@ public class VendingMachineTest {
     public void testReloadProduct_maxCapacity() {
         VendingMachine vm = new VendingMachine();
         Product p = new Snack("Cookies", 1.0, "snack", 9, 10, 100);
-        Operator op = new Operator(2, "Mike");
+        Operator op = new Operator("Mike", AccessLevel.STAFF);
 
         vm.reloadProduct(p, 3, op);
         Assertions.assertEquals(10, p.getStock());
@@ -163,7 +162,7 @@ public class VendingMachineTest {
     public void testReloadProduct_negativeAmount() {
         VendingMachine vm = new VendingMachine();
         Product p = new Snack("Cookies", 1.0, "snack", 5, 10, 100);
-        Operator op = new Operator(3, "Jane");
+        Operator op = new Operator("Jane", AccessLevel.STAFF);
 
         vm.reloadProduct(p, -3, op);
         Assertions.assertEquals(2, p.getStock());  // Stock shouldn't go negative
@@ -175,10 +174,10 @@ public class VendingMachineTest {
         VendingMachine vm = new VendingMachine();
         Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
         vm.getInventory().add(p);
-        Operator operator = new Operator(1, "John");
+        Operator operator = new Operator("John", AccessLevel.ADMIN);
 
         vm.changePrice(p, 2.0, operator);
-        Assertions.assertEquals(2.0, p.getPrice(), 0.001);
+        Assertions.assertEquals(2.0, p.getPrice());
     }
 
     @Test
@@ -186,10 +185,10 @@ public class VendingMachineTest {
         VendingMachine vm = new VendingMachine();
         Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
         vm.getInventory().add(p);
-        Operator operator = new Operator(1, "John");
+        Operator operator = new Operator("John", AccessLevel.ADMIN);
 
         vm.changePrice(p, 0.0, operator);
-        Assertions.assertEquals(0.0, p.getPrice(), 0.001);
+        Assertions.assertEquals(0.0, p.getPrice());
     }
 
     @Test
@@ -197,7 +196,7 @@ public class VendingMachineTest {
         VendingMachine vm = new VendingMachine();
         Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
         vm.getInventory().add(p);
-        Operator operator = new Operator(1, "John");
+        Operator operator = new Operator("John", AccessLevel.ADMIN);
 
         vm.changePrice(p, -1.0, operator);
         Assertions.assertEquals(-1.0, p.getPrice(), 0.001);
@@ -211,7 +210,7 @@ public class VendingMachineTest {
         vm.getInventory().add(p);
         vm.addMoney(new Money(Map.of(2.0, 1)));
 
-        Buyer b = new Buyer(1, "Maan");
+        Buyer b = new Buyer("John");
         boolean result = vm.processTransaction(b, p);
         Assertions.assertTrue(result);
     }
@@ -223,7 +222,7 @@ public class VendingMachineTest {
         vm.getInventory().add(p);
         vm.addMoney(new Money(Map.of(1.0, 1)));
 
-        Buyer b = new Buyer(2, "Alex");
+        Buyer b = new Buyer("Alex");
         boolean result = vm.processTransaction(b, p);
         Assertions.assertFalse(result);
     }
@@ -235,7 +234,7 @@ public class VendingMachineTest {
         vm.getInventory().add(p);
         vm.addMoney(new Money(Map.of(1.5, 1)));
 
-        Buyer b = new Buyer(3, "Sam");
+        Buyer b = new Buyer("Sam");
         boolean result = vm.processTransaction(b, p);
         Assertions.assertFalse(result);
     }
@@ -285,7 +284,7 @@ public class VendingMachineTest {
             writer.println("Item: Chips, Sold: 5, Profit: 7.50");
             writer.println("Item: Soda, Sold: 3, Profit: 6.00");
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            System.out.println("File not found");
         }
 
         vm.readProfitSheet(Path.of(testFile));
@@ -293,8 +292,6 @@ public class VendingMachineTest {
         File file = new File(testFile);
         Assertions.assertTrue(file.exists());
         Assertions.assertTrue(file.length() > 0);
-
-        file.delete();  // Cleanup after test
     }
 
     @Test
@@ -302,7 +299,6 @@ public class VendingMachineTest {
         VendingMachine vm = new VendingMachine();
         vm.readProfitSheet(Path.of("nonExistentFile.txt"));
 
-        // No exception should be thrown and we just check that it handled the missing file
         Assertions.assertTrue(true);
     }
 
@@ -315,16 +311,10 @@ public class VendingMachineTest {
         try (PrintWriter writer = new PrintWriter(testFile)) {
             // Empty file
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            System.out.println("File not found");
         }
 
         vm.readProfitSheet(Path.of(testFile));
-
-        // Ensure no output or error is thrown for an empty file
         Assertions.assertTrue(true);
-
-        File file = new File(testFile);
-        file.delete();  // Cleanup after test
     }
-
 }

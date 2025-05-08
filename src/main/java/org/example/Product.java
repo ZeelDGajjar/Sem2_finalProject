@@ -9,20 +9,20 @@ public class Product implements Comparable<Product> {
     private int stock;
     private int maxCapacity;
 
-    public Product(String name, double price, String category, int stock, int maxCapacity) {
-        this.name = name;
-        this.price = price;
-        this.category = category;
-        this.stock = stock;
-        this.maxCapacity = maxCapacity;
-    }
-
     public Product() {
         this.name = "Unnamed Product";
         this.price = 0;
         this.category = "Unknown";
         this.stock = 0;
         this.maxCapacity = 5;
+    }
+
+    public Product(String name, double price, String category, int stock, int maxCapacity) {
+        this.name = name;
+        this.price = price;
+        this.category = category;
+        this.stock = stock;
+        this.maxCapacity = maxCapacity;
     }
 
     /**
@@ -50,6 +50,7 @@ public class Product implements Comparable<Product> {
 
     /**
      * Compares products first by price, then by name if prices are the same.
+     * @param o The product to compare to
      */
     @Override
     public int compareTo(Product o) {
@@ -63,12 +64,13 @@ public class Product implements Comparable<Product> {
     @Override
     public String toString() {
         return "Product{" +
+                super.toString() +
                 "name='" + name + '\'' +
                 ", price=" + price +
                 ", category='" + category + '\'' +
                 ", stock=" + stock +
                 ", maxCapacity=" + maxCapacity +
-                '}' + super.toString();
+                '}';
     }
 
     @Override

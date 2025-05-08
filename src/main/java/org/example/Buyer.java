@@ -9,13 +9,13 @@ public class Buyer extends User{
     private final List<Product> purchaseHistory;
 
     public Buyer() {
-        super(getNextId(), "Unknown Buyer");
+        super("Unknown Buyer");
         purchaseHistory = new ArrayList<>();
         this.selectedProduct = null;
     }
 
-    public Buyer(int id, String name) {
-        super(id, name);
+    public Buyer(String name) {
+        super(name);
         this.selectedProduct = null;
         this.purchaseHistory = new ArrayList<>();
     }
@@ -57,6 +57,7 @@ public class Buyer extends User{
 
     /**
      * Finalizes the purchase of the selected product
+     * @param vendingMachine The vendingMachine from which the buyer will but the product from
      */
     public void buy(VendingMachine vendingMachine) {
         if (selectedProduct == null) {
@@ -74,7 +75,9 @@ public class Buyer extends User{
      */
     @Override
     public void displayMessage(String message) {
-        System.out.println("Please note:" + message);
+        if (message != null) {
+            System.out.println("Please note:" + message);
+        }
     }
 
     /**

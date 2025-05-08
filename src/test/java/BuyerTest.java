@@ -7,7 +7,7 @@ public class BuyerTest {
 
     @Test
     public void testChooseProduct_Valid() {
-        Buyer buyer = new Buyer(1, "John Doe");
+        Buyer buyer = new Buyer("John Doe");
         List<Product> products = List.of(new Product("Soda", 1.50, "", 6, 12));
         Product selected = buyer.chooseProduct("Soda", products);
         assertEquals("Soda", selected.getName());
@@ -15,7 +15,7 @@ public class BuyerTest {
 
     @Test
     public void testChooseProduct_Invalid() {
-        Buyer buyer = new Buyer(1, "John Doe");
+        Buyer buyer = new Buyer("John Doe");
         List<Product> products = List.of(new Product("Soda", 1.50, "", 6, 12));
         Product selected = buyer.chooseProduct("Water", products);
         assertNull(selected);
@@ -23,7 +23,7 @@ public class BuyerTest {
 
     @Test
     public void testChooseProduct_EmptyString() {
-        Buyer buyer = new Buyer(1, "John Doe");
+        Buyer buyer = new Buyer("John Doe");
         List<Product> products = List.of(new Product("Soda", 1.50, "", 6, 12));
         Product selected = buyer.chooseProduct("", products);
         assertNull(selected);
@@ -31,7 +31,7 @@ public class BuyerTest {
 
     @Test
     public void testChooseProduct_Null() {
-        Buyer buyer = new Buyer(1, "John Doe");
+        Buyer buyer = new Buyer("John Doe");
         List<Product> products = List.of(new Product("Soda", 1.50, "", 6, 12));
         Product selected = buyer.chooseProduct(null, products);
         assertNull(selected);
@@ -39,7 +39,7 @@ public class BuyerTest {
 
     @Test
     public void testCancelOrder() {
-        Buyer buyer = new Buyer(1, "John Doe");
+        Buyer buyer = new Buyer("John Doe");
         buyer.setSelectedProduct(new Product("Soda", 1.50, "", 6, 12));
         buyer.cancelOrder();
         assertNull(buyer.getSelectedProduct());
@@ -47,14 +47,14 @@ public class BuyerTest {
 
     @Test
     public void testCancelOrder_NoSelection() {
-        Buyer buyer = new Buyer(1, "John Doe");
+        Buyer buyer = new Buyer("John Doe");
         buyer.cancelOrder(); // nothing selected
         assertNull(buyer.getSelectedProduct());
     }
 
     @Test
     public void testBuy_AddsToHistory() {
-        Buyer buyer = new Buyer(1, "John Doe");
+        Buyer buyer = new Buyer("John Doe");
         VendingMachine vm = new VendingMachine();
         Product soda = new Product("Soda", 1.50, "", 6, 12);
         Operator operator = new Operator();
@@ -66,7 +66,7 @@ public class BuyerTest {
 
     @Test
     public void testBuy_NoProductSelected() {
-        Buyer buyer = new Buyer(1, "John Doe");
+        Buyer buyer = new Buyer("John Doe");
         VendingMachine vm = new VendingMachine();
         buyer.buy(vm); // should not throw
         assertTrue(buyer.getPurchaseHistory().isEmpty());
@@ -74,7 +74,7 @@ public class BuyerTest {
 
     @Test
     public void testBuy_TwiceSameProduct() {
-        Buyer buyer = new Buyer(1, "John Doe");
+        Buyer buyer = new Buyer("John Doe");
         VendingMachine vm = new VendingMachine();
         Product soda = new Product("Soda", 1.50, "", 6, 12);
         Operator operator = new Operator();
@@ -87,26 +87,19 @@ public class BuyerTest {
 
     @Test
     public void testDisplayMessage() {
-        Buyer buyer = new Buyer(1, "John Doe");
+        Buyer buyer = new Buyer("John Doe");
         assertDoesNotThrow(() -> buyer.displayMessage("Hello"));
     }
 
     @Test
     public void testDisplayMessage_EmptyString() {
-        Buyer buyer = new Buyer(1, "John Doe");
+        Buyer buyer = new Buyer("John Doe");
         assertDoesNotThrow(() -> buyer.displayMessage(""));
     }
 
     @Test
     public void testDisplayMessage_Null() {
-        Buyer buyer = new Buyer(1, "John Doe");
+        Buyer buyer = new Buyer("John Doe");
         assertDoesNotThrow(() -> buyer.displayMessage(null));
-    }
-
-    @Test
-    public void testToString_ContainsName() {
-        Buyer buyer = new Buyer(1, "John Doe");
-        String output = buyer.toString();
-        assertEquals(false, output.contains("John Doe"));
     }
 }

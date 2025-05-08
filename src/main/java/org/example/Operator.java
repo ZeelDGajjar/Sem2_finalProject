@@ -9,21 +9,21 @@ public class Operator extends User {
     private Map<Product, Integer> stockingHistory;
 
     public Operator() {
-        super(getNextId(), "Unknown Operator");
+        super("Unknown Operator");
         profitSheets = new ArrayList<>();
         accessLevel = AccessLevel.STAFF;
         stockingHistory = new LinkedHashMap<>();
     }
 
-    public Operator(int id, String name) {
-        super(id, name);
-        profitSheets = new ArrayList<>();
-        accessLevel = AccessLevel.STAFF;
+    public Operator(String name, AccessLevel accessLevel) {
+        super(name);
+        this.accessLevel = accessLevel;
+        this.profitSheets = new ArrayList<>();
         stockingHistory = new LinkedHashMap<>();
     }
 
-    public Operator(int id, String name, AccessLevel accessLevel, List<Path> profitSheets) {
-        super(id, name);
+    public Operator(String name, AccessLevel accessLevel, List<Path> profitSheets) {
+        super(name);
         this.accessLevel = accessLevel;
         this.profitSheets = profitSheets;
         stockingHistory = new LinkedHashMap<>();

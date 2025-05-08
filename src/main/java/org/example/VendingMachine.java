@@ -32,28 +32,28 @@ public class VendingMachine implements TransactionHandler{
      * @param item the item to dispense
      */
     public void dispenseItem(Buyer buyer, Product item) {
-        if (processTransaction(buyer, item) && inventory.contains(item) && item.getStock() > 0) {
+        if (processTransaction(buyer, item) && selectItem(item) != null) {
             item.setStock(item.getStock() - 1);
             System.out.println(item.getName() + " has been dispensed");
 
             String log = String.format("%s - %s sold for $%.2f", new Date(), item.getName(), item.getPrice());
             salesLog.add(log);
         } else {
-            System.out.println(item.getName() + " has not been dispensed due to Transaction failure or item unavailability");
+            System.out.println(item.getName() + " has not been dispensed due to Transaction failure.");
         }
     }
 
     /**
      * Allows a user to select an item from the inventory by name
-     * @param itemName The name of the product the user wants to select
+     * @param product The name of the product the user wants to select
      * @return The matching Product if found; otherwise, null
      */
-    public Product selectItem(String itemName) {
-       for (Product item : inventory) {
-           if (item.getName().equalsIgnoreCase(itemName)) {
-               return item;
-           }
+    public Product selectItem(Product product) {
+       if (inventory.contains(product) && product.getStock() > 0) {
+           return product;
        }
+
+       System.out.println("Product is out of stock");
        return null;
     }
 
@@ -62,7 +62,9 @@ public class VendingMachine implements TransactionHandler{
      * @param money The Money object representing the amount inserted by the user
      */
     public void addMoney(Money money) {
-        currentSessionMoney.add(money.getCashMap());
+        if (money != null && money.calculateTotal() != 0) {
+            currentSessionMoney.add(money.getCashMap());
+        }
     }
 
     /**
@@ -77,6 +79,7 @@ public class VendingMachine implements TransactionHandler{
      * Reloads or adds stock for an existing or new product with a specified price
      * @param item The product to be reloaded into inventory
      * @param amount The amount of item to add
+     * @param operator The operator who is reloading the product
      */
     public void reloadProduct(Product item, int amount, Operator operator) {
         int newStock = Math.min(item.getStock() + amount, item.getMaxCapacity());
@@ -87,7 +90,6 @@ public class VendingMachine implements TransactionHandler{
         }
 
         operator.getStockingHistory().put(item,amount);
-
         System.out.println("Product reloaded: " + item.getName() + " by " + amount + " units.");
     }
 
@@ -99,9 +101,10 @@ public class VendingMachine implements TransactionHandler{
     public void changePrice(Product item, double price, Operator operator) {
         if (operator.getAccessLevel() == AccessLevel.ADMIN) {
             item.setPrice(price);
+            System.out.println("Successfully changed price of " + item.getName() + ". New price set to: " + price + " dollars.");
             return;
         }
-        System.out.println("You don't have access to perform this operation");
+        System.out.println("You don't have access to perform this operation.");
     }
 
     /**
@@ -114,8 +117,7 @@ public class VendingMachine implements TransactionHandler{
     public boolean processTransaction(Buyer buyer, Product item) {
         double total = currentSessionMoney.calculateTotal();
 
-        if (item.getStock() <= 0) {
-            System.out.println("Item out of stock");
+        if (selectItem(item) == null) {
             return false;
         }
 
@@ -125,7 +127,7 @@ public class VendingMachine implements TransactionHandler{
         }
 
         double change = total - item.getPrice();
-        System.out.printf("Transaction successful. Change returned: $%.2f%n", change);
+        System.out.printf("Transaction successful. Change returned: $%.2f", change);
         currentSessionMoney.clear();
         return true;
     }
@@ -156,7 +158,7 @@ public class VendingMachine implements TransactionHandler{
      * Writes vending machine inventory stocking and sales data to a file for record-keeping
      */
     public void writeToFile() {
-        try (PrintWriter writer = new PrintWriter("VendingMachine_Data.txt")) {
+        try (PrintWriter writer = new PrintWriter("./resources/VendingMachine_History.txt")) {
 
             writer.println("=== INVENTORY ===");
             for (Product item : inventory) {

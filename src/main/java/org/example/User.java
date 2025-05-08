@@ -16,19 +16,10 @@ public abstract class User implements MessageDisplay {
         this.name = name;
     }
 
-    public User(int id, String name) {
-        this.id = nextId++;
-        this.name = name;
-    }
-
     public abstract void displayMessage(String message);
 
     public int getId() {
         return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getName() {
