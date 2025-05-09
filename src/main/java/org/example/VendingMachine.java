@@ -32,14 +32,15 @@ public class VendingMachine implements TransactionHandler{
      * @param item the item to dispense
      */
     public void dispenseItem(Buyer buyer, Product item) {
-        if (processTransaction(buyer, item) && selectItem(item) != null) {
+        if (item != null && processTransaction(buyer, item) && selectItem(item) != null) {
             item.setStock(item.getStock() - 1);
             System.out.println(item.getName() + " has been dispensed");
 
-            String log = String.format("%s - %s sold for $%.2f", new Date(), item.getName(), item.getPrice());
+            String time = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+            String log = String.format("%s - %s sold for $%.2f", time, item.getName(), item.getPrice());
             salesLog.add(log);
         } else {
-            System.out.println(item.getName() + " has not been dispensed due to Transaction failure.");
+            System.out.println("Selected item has not been dispensed due to Transaction failure.");
         }
     }
 
@@ -49,8 +50,10 @@ public class VendingMachine implements TransactionHandler{
      * @return The matching Product if found; otherwise, null
      */
     public Product selectItem(Product product) {
-       if (inventory.contains(product) && product.getStock() > 0) {
-           return product;
+       for (Product p : inventory) {
+           if (p.getName().equals(p.getName()) && p.getStock() > 0) {
+               return p;
+           }
        }
 
        System.out.println("Product is out of stock");
@@ -82,6 +85,11 @@ public class VendingMachine implements TransactionHandler{
      * @param operator The operator who is reloading the product
      */
     public void reloadProduct(Product item, int amount, Operator operator) {
+        if (amount <= 0) {
+            System.out.println("Invalid amount to reload. Must be a positive integer.");
+            return;
+        }
+
         int newStock = Math.min(item.getStock() + amount, item.getMaxCapacity());
         item.setStock(newStock);
 
@@ -99,6 +107,11 @@ public class VendingMachine implements TransactionHandler{
      * @param price The new price for the product
      */
     public void changePrice(Product item, double price, Operator operator) {
+        if (price < 0) {
+            System.out.println("Invalid price. Price cannot be negative.");
+            return;
+        }
+
         if (operator.getAccessLevel() == AccessLevel.ADMIN) {
             item.setPrice(price);
             System.out.println("Successfully changed price of " + item.getName() + ". New price set to: " + price + " dollars.");
@@ -136,8 +149,8 @@ public class VendingMachine implements TransactionHandler{
      * Reads and processes the profit sheet from a specified file
      * @param fileName The name of the file containing profit information
      */
-    public void readProfitSheet(Path fileName) {
-        File file = new File(String.valueOf(fileName));
+    public static void readProfitSheet(Path fileName) {
+        File file = fileName.toFile();
         if (!file.exists()) {
             System.out.println("Profit sheet file not found: " + fileName);
             return;

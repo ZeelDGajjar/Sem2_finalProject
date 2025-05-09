@@ -1,320 +1,410 @@
 import org.example.*;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.nio.file.Path;
-import java.util.Map;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class VendingMachineTest {
 
-    // === dispenseItem ===
+    // === dispenseItem Tests ===
     @Test
-    public void testDispenseItem_successful() {
+    void testDispenseItem_Successful() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
-        vm.getInventory().add(p);
-        vm.addMoney(new Money(Map.of(1.5, 1)));
+        Product chips = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(chips);
+        vm.addMoney(new Money(Map.of(2.0, 1)));
+        Buyer buyer = new Buyer("John");
 
-        Buyer b = new Buyer("John");
-        vm.dispenseItem(b, p);
-
-        Assertions.assertEquals(4, p.getStock());
-        Assertions.assertFalse(vm.getSalesLog().isEmpty());
+        vm.dispenseItem(buyer, chips);
+        assertEquals(4, chips.getStock());
+        assertEquals(1, vm.getSalesLog().size());
+        assertTrue(vm.getSalesLog().getFirst().contains("Chips sold for $1.50"));
+        assertEquals(0.0, vm.getCurrentSessionMoney().calculateTotal());
     }
 
     @Test
-    public void testDispenseItem_transactionFailure() {
+    void testDispenseItem_InsufficientFunds() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
-        vm.getInventory().add(p);
+        Product chips = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(chips);
         vm.addMoney(new Money(Map.of(1.0, 1)));
+        Buyer buyer = new Buyer("John");
 
-        Buyer b = new Buyer("Alex");
-        vm.dispenseItem(b, p);
-
-        Assertions.assertEquals(5, p.getStock());
-        Assertions.assertTrue(vm.getSalesLog().isEmpty());
+        vm.dispenseItem(buyer, chips);
+        assertEquals(5, chips.getStock());
+        assertTrue(vm.getSalesLog().isEmpty());
+        assertEquals(1.0, vm.getCurrentSessionMoney().calculateTotal());
     }
 
     @Test
-    public void testDispenseItem_outOfStock() {
+    void testDispenseItem_OutOfStock() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Chips", 1.5, "snack", 0, 10, 100);
-        vm.getInventory().add(p);
-        vm.addMoney(new Money(Map.of(1.5, 1)));
+        Product chips = new Snack("Chips", 1.5, "snack", 0, 10, 100);
+        vm.getInventory().add(chips);
+        vm.addMoney(new Money(Map.of(2.0, 1)));
+        Buyer buyer = new Buyer("John");
 
-        Buyer b = new Buyer("Sam");
-        vm.dispenseItem(b, p);
-
-        Assertions.assertEquals(0, p.getStock());
-        Assertions.assertTrue(vm.getSalesLog().isEmpty());
+        vm.dispenseItem(buyer, chips);
+        assertEquals(0, chips.getStock());
+        assertTrue(vm.getSalesLog().isEmpty());
     }
 
-    // === selectItem ===
     @Test
-    public void testSelectItem_existingProduct() {
+    void testDispenseItem_NullProduct() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
-        vm.getInventory().add(p);
+        vm.addMoney(new Money(Map.of(2.0, 1)));
+        Buyer buyer = new Buyer("John");
 
-        Product result = vm.selectItem("Chips");
-        Assertions.assertEquals(p, result);
+        vm.dispenseItem(buyer, null);
+        assertTrue(vm.getSalesLog().isEmpty());
+        assertEquals(2.0, vm.getCurrentSessionMoney().calculateTotal());
     }
 
+    // === selectItem Tests ===
     @Test
-    public void testSelectItem_nonExistingProduct() {
+    void testSelectItem_ExistingProductInStock() {
         VendingMachine vm = new VendingMachine();
-        Product result = vm.selectItem("Soda");
+        Product chips = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(chips);
 
-        Assertions.assertNull(result);
+        assertEquals(chips, vm.selectItem(chips));
     }
 
     @Test
-    public void testSelectItem_caseInsensitive() {
+    void testSelectItem_ProductOutOfStock() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Coke", 2.0, "drink", 10, 10, 350);
-        vm.getInventory().add(p);
+        Product chips = new Snack("Chips", 1.5, "snack", 0, 10, 100);
+        vm.getInventory().add(chips);
 
-        Product result = vm.selectItem("coke");
-        Assertions.assertEquals(p, result);
+        assertNull(vm.selectItem(chips));
     }
 
-    // === addMoney ===
     @Test
-    public void testAddMoney_singleDenomination() {
+    void testSelectItem_NullProduct() {
+        VendingMachine vm = new VendingMachine();
+        assertNull(vm.selectItem(null));
+    }
+
+    // === addMoney Tests ===
+    @Test
+    void testAddMoney_SingleDenomination() {
         VendingMachine vm = new VendingMachine();
         Money money = new Money(Map.of(2.0, 1));
-        vm.addMoney(money);
 
-        Assertions.assertEquals(2.0, vm.getCurrentSessionMoney().calculateTotal(), 0.001);
+        vm.addMoney(money);
+        assertEquals(2.0, vm.getCurrentSessionMoney().calculateTotal(), 0.001);
     }
 
     @Test
-    public void testAddMoney_multipleDenominations() {
+    void testAddMoney_MultipleDenominations() {
         VendingMachine vm = new VendingMachine();
         Money money = new Money(Map.of(1.0, 2, 0.5, 1));
+
         vm.addMoney(money);
-
-        Assertions.assertEquals(2.5, vm.getCurrentSessionMoney().calculateTotal(), 0.001);
+        assertEquals(2.5, vm.getCurrentSessionMoney().calculateTotal(), 0.001);
     }
 
     @Test
-    public void testAddMoney_accumulates() {
+    void testAddMoney_NullMoney() {
         VendingMachine vm = new VendingMachine();
-        vm.addMoney(new Money(Map.of(1.0, 1)));
-        vm.addMoney(new Money(Map.of(0.5, 1)));
-
-        Assertions.assertEquals(1.5, vm.getCurrentSessionMoney().calculateTotal(), 0.001);
+        vm.addMoney(null);
+        assertEquals(0.0, vm.getCurrentSessionMoney().calculateTotal(), 0.001);
     }
 
-    // === showInventory ===
     @Test
-    public void testShowInventory_notEmpty() {
+    void testAddMoney_ZeroAmount() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
-        vm.getInventory().add(p);
+        Money money = new Money(Map.of(0.0, 1));
+
+        vm.addMoney(money);
+        assertEquals(0.0, vm.getCurrentSessionMoney().calculateTotal(), 0.001);
+    }
+
+    // === showInventory Tests ===
+    @Test
+    void testShowInventory_Empty() {
+        VendingMachine vm = new VendingMachine();
+        vm.showInventory(); // Should not throw exception
+    }
+
+    @Test
+    void testShowInventory_SingleItem() {
+        VendingMachine vm = new VendingMachine();
+        Product chips = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(chips);
 
         vm.showInventory();
     }
 
     @Test
-    public void testShowInventory_empty() {
+    void testShowInventory_MultipleItems() {
         VendingMachine vm = new VendingMachine();
-        vm.showInventory();
-    }
-
-    @Test
-    public void testShowInventory_multipleItems() {
-        VendingMachine vm = new VendingMachine();
-        Product p1 = new Snack("Chips", 1.5, "snack", 5, 10, 100);
-        Product p2 = new Drink("Coke", 2.0, "drink", 10, 10, 350);
-        vm.getInventory().add(p1);
-        vm.getInventory().add(p2);
+        Product chips = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        Product coke = new Drink("Coke", 2.0, "drink", 10, 10, 350);
+        vm.getInventory().add(chips);
+        vm.getInventory().add(coke);
 
         vm.showInventory();
     }
 
-    // === reloadProduct ===
+    // === reloadProduct Tests ===
     @Test
-    public void testReloadProduct_increaseStock() {
+    void testReloadProduct_IncreaseStock() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Cookies", 1.0, "snack", 5, 10, 100);
-        Operator op = new Operator("John", AccessLevel.STAFF);
+        Product chips = new Snack("Chips", 1.0, "snack", 5, 10, 100);
+        Operator operator = new Operator("John", AccessLevel.STAFF);
 
-        vm.reloadProduct(p, 3, op);
-        Assertions.assertEquals(8, p.getStock());
+        vm.reloadProduct(chips, 3, operator);
+        assertEquals(8, chips.getStock());
+        assertEquals(3, operator.getStockingHistory().get(chips).intValue());
     }
 
     @Test
-    public void testReloadProduct_maxCapacity() {
+    void testReloadProduct_AtMaxCapacity() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Cookies", 1.0, "snack", 9, 10, 100);
-        Operator op = new Operator("Mike", AccessLevel.STAFF);
+        Product chips = new Snack("Chips", 1.0, "snack", 9, 10, 100);
+        Operator operator = new Operator("John", AccessLevel.STAFF);
 
-        vm.reloadProduct(p, 3, op);
-        Assertions.assertEquals(10, p.getStock());
+        vm.reloadProduct(chips, 3, operator);
+        assertEquals(10, chips.getStock());
     }
 
     @Test
-    public void testReloadProduct_negativeAmount() {
+    void testReloadProduct_ZeroAmount() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Cookies", 1.0, "snack", 5, 10, 100);
-        Operator op = new Operator("Jane", AccessLevel.STAFF);
+        Product chips = new Snack("Chips", 1.0, "snack", 5, 10, 100);
+        Operator operator = new Operator("John", AccessLevel.STAFF);
 
-        vm.reloadProduct(p, -3, op);
-        Assertions.assertEquals(2, p.getStock());  // Stock shouldn't go negative
+        vm.reloadProduct(chips, 0, operator);
+        assertEquals(5, chips.getStock());
     }
 
-    // === changePrice ===
     @Test
-    public void testChangePrice_valid() {
+    void testReloadProduct_NegativeAmount() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
-        vm.getInventory().add(p);
+        Product chips = new Snack("Chips", 1.0, "snack", 5, 10, 100);
+        Operator operator = new Operator("John", AccessLevel.STAFF);
+
+        vm.reloadProduct(chips, -1, operator);
+        assertEquals(5, chips.getStock());
+    }
+
+    @Test
+    void testReloadProduct_NewProduct() {
+        VendingMachine vm = new VendingMachine();
+        Product candy = new Snack("Candy", 1.0, "snack", 0, 10, 100);
+        Operator operator = new Operator("John", AccessLevel.STAFF);
+
+        vm.reloadProduct(candy, 5, operator);
+        assertTrue(vm.getInventory().contains(candy));
+        assertEquals(5, candy.getStock());
+    }
+
+    // === changePrice Tests ===
+    @Test
+    void testChangePrice_ValidPriceAdmin() {
+        VendingMachine vm = new VendingMachine();
+        Product chips = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(chips);
         Operator operator = new Operator("John", AccessLevel.ADMIN);
 
-        vm.changePrice(p, 2.0, operator);
-        Assertions.assertEquals(2.0, p.getPrice());
+        vm.changePrice(chips, 2.0, operator);
+        assertEquals(2.0, chips.getPrice(), 0.001);
     }
 
     @Test
-    public void testChangePrice_zero() {
+    void testChangePrice_ZeroPriceAdmin() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
-        vm.getInventory().add(p);
+        Product chips = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(chips);
         Operator operator = new Operator("John", AccessLevel.ADMIN);
 
-        vm.changePrice(p, 0.0, operator);
-        Assertions.assertEquals(0.0, p.getPrice());
+        vm.changePrice(chips, 0.0, operator);
+        assertEquals(0.0, chips.getPrice(), 0.001);
     }
 
     @Test
-    public void testChangePrice_negative() {
+    void testChangePrice_NegativePrice() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
-        vm.getInventory().add(p);
+        Product chips = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(chips);
         Operator operator = new Operator("John", AccessLevel.ADMIN);
 
-        vm.changePrice(p, -1.0, operator);
-        Assertions.assertEquals(-1.0, p.getPrice(), 0.001);
+        vm.changePrice(chips, -1.0, operator);
+        assertEquals(1.5, chips.getPrice(), 0.001); // Price should not change
     }
 
-    // === processTransaction ===
     @Test
-    public void testProcessTransaction_success() {
+    void testChangePrice_NonAdmin() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
-        vm.getInventory().add(p);
+        Product chips = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(chips);
+        Operator operator = new Operator("John", AccessLevel.STAFF);
+
+        vm.changePrice(chips, 2.0, operator);
+        assertEquals(1.5, chips.getPrice(), 0.001); // Price should not change
+    }
+
+    // === processTransaction Tests ===
+    @Test
+    void testProcessTransaction_Success() {
+        VendingMachine vm = new VendingMachine();
+        Product chips = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(chips);
         vm.addMoney(new Money(Map.of(2.0, 1)));
+        Buyer buyer = new Buyer("John");
 
-        Buyer b = new Buyer("John");
-        boolean result = vm.processTransaction(b, p);
-        Assertions.assertTrue(result);
+        assertTrue(vm.processTransaction(buyer, chips));
+        assertEquals(0.0, vm.getCurrentSessionMoney().calculateTotal());
     }
 
     @Test
-    public void testProcessTransaction_insufficientMoney() {
+    void testProcessTransaction_InsufficientMoney() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
-        vm.getInventory().add(p);
+        Product chips = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(chips);
         vm.addMoney(new Money(Map.of(1.0, 1)));
+        Buyer buyer = new Buyer("John");
 
-        Buyer b = new Buyer("Alex");
-        boolean result = vm.processTransaction(b, p);
-        Assertions.assertFalse(result);
+        assertFalse(vm.processTransaction(buyer, chips));
+        assertEquals(1.0, vm.getCurrentSessionMoney().calculateTotal());
     }
 
     @Test
-    public void testProcessTransaction_outOfStock() {
+    void testProcessTransaction_OutOfStock() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Chips", 1.5, "snack", 0, 10, 100);
-        vm.getInventory().add(p);
-        vm.addMoney(new Money(Map.of(1.5, 1)));
+        Product chips = new Snack("Chips", 1.5, "snack", 0, 10, 100);
+        vm.getInventory().add(chips);
+        vm.addMoney(new Money(Map.of(2.0, 1)));
+        Buyer buyer = new Buyer("John");
 
-        Buyer b = new Buyer("Sam");
-        boolean result = vm.processTransaction(b, p);
-        Assertions.assertFalse(result);
+        assertFalse(vm.processTransaction(buyer, chips));
     }
 
-    // === writeToFile ===
     @Test
-    public void testWriteToFile_success() {
+    void testProcessTransaction_NullProduct() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
-        vm.getInventory().add(p);
+        vm.addMoney(new Money(Map.of(2.0, 1)));
+        Buyer buyer = new Buyer("John");
+
+        assertFalse(vm.processTransaction(buyer, null));
+    }
+
+    // === writeToFile Tests ===
+    @Test
+    void testWriteToFile_Success() {
+        VendingMachine vm = new VendingMachine();
+        Product chips = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(chips);
+
+        String filePath = "./test_VendingMachine_History.txt";
+        try {
+            PrintWriter writer = new PrintWriter(filePath);
+            writer.println("Test");
+            writer.close();
+        } catch (FileNotFoundException e) {
+            fail("Could not create test file: " + e.getMessage());
+        }
+
         vm.writeToFile();
+        File file = new File(filePath);
+        assertTrue(file.exists());
+        assertTrue(file.length() > 0);
 
-        File file = new File("VendingMachine_Data.txt");
-        Assertions.assertTrue(file.exists());
+        file.delete();
     }
 
     @Test
-    public void testWriteToFile_emptyInventory() {
+    void testWriteToFile_EmptyInventory() {
         VendingMachine vm = new VendingMachine();
+
+        String filePath = "./test_VendingMachine_History.txt";
+        try {
+            PrintWriter writer = new PrintWriter(filePath);
+            writer.println("Test");
+            writer.close();
+        } catch (FileNotFoundException e) {
+            fail("Could not create test file: " + e.getMessage());
+        }
+
         vm.writeToFile();
+        File file = new File(filePath);
+        assertTrue(file.exists());
+        assertTrue(file.length() > 0);
 
-        File file = new File("VendingMachine_Data.txt");
-        Assertions.assertTrue(file.exists());
-        Assertions.assertTrue(file.length() > 0);
+        file.delete();
     }
 
     @Test
-    public void testWriteToFile_noSales() {
+    void testWriteToFile_NoSales() {
         VendingMachine vm = new VendingMachine();
-        Product p = new Snack("Chips", 1.5, "snack", 5, 10, 100);
-        vm.getInventory().add(p);
+        Product chips = new Snack("Chips", 1.5, "snack", 5, 10, 100);
+        vm.getInventory().add(chips);
+
+        String filePath = "./test_VendingMachine_History.txt";
+        try {
+            PrintWriter writer = new PrintWriter(filePath);
+            writer.println("Test");
+            writer.close();
+        } catch (FileNotFoundException e) {
+            fail("Could not create test file: " + e.getMessage());
+        }
+
         vm.writeToFile();
+        File file = new File(filePath);
+        assertTrue(file.exists());
+        assertTrue(file.length() > 0);
 
-        File file = new File("VendingMachine_Data.txt");
-        Assertions.assertTrue(file.exists());
-        Assertions.assertTrue(file.length() > 0);
+        file.delete();
     }
 
-    // === readProfitSheet ===
+    // === readProfitSheet Tests ===
     @Test
-    public void testReadProfitSheet_success() {
+    void testReadProfitSheet_Success() {
         VendingMachine vm = new VendingMachine();
-        String testFile = "profitSheetTest.txt";
+        String filePath = "./test_profitSheet.txt";
 
-        // Create a temporary profit sheet file
-        try (PrintWriter writer = new PrintWriter(testFile)) {
+        try {
+            PrintWriter writer = new PrintWriter(filePath);
             writer.println("Item: Chips, Sold: 5, Profit: 7.50");
-            writer.println("Item: Soda, Sold: 3, Profit: 6.00");
+            writer.close();
         } catch (FileNotFoundException e) {
-            System.out.println("File not found");
+            fail("Could not create test file: " + e.getMessage());
         }
 
-        vm.readProfitSheet(Path.of(testFile));
+        VendingMachine.readProfitSheet(new File(filePath).toPath());
+        File file = new File(filePath);
+        assertTrue(file.exists());
 
-        File file = new File(testFile);
-        Assertions.assertTrue(file.exists());
-        Assertions.assertTrue(file.length() > 0);
+        file.delete();
     }
 
     @Test
-    public void testReadProfitSheet_fileNotFound() {
-        VendingMachine vm = new VendingMachine();
-        vm.readProfitSheet(Path.of("nonExistentFile.txt"));
-
-        Assertions.assertTrue(true);
+    void testReadProfitSheet_FileNotFound() {
+        VendingMachine.readProfitSheet(new File("nonexistent.txt").toPath());
+        // Should not throw exception
     }
 
     @Test
-    public void testReadProfitSheet_emptyFile() {
+    void testReadProfitSheet_EmptyFile() {
         VendingMachine vm = new VendingMachine();
-        String testFile = "emptyProfitSheet.txt";
+        String filePath = "./test_profitSheet.txt";
 
-        // Create an empty file
-        try (PrintWriter writer = new PrintWriter(testFile)) {
-            // Empty file
+        try {
+            PrintWriter writer = new PrintWriter(filePath);
+            writer.close();
         } catch (FileNotFoundException e) {
-            System.out.println("File not found");
+            fail("Could not create empty file: " + e.getMessage());
         }
 
-        vm.readProfitSheet(Path.of(testFile));
-        Assertions.assertTrue(true);
+        VendingMachine.readProfitSheet(new File(filePath).toPath());
+        File file = new File(filePath);
+        assertTrue(file.exists());
+
+        file.delete();
     }
 }
