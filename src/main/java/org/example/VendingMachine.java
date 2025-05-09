@@ -28,10 +28,12 @@ public class VendingMachine implements TransactionHandler{
 
     /**
      * Dispenses selected item once the transaction is successfully completed
+     *
      * @param buyer the buyer doing the performance
-     * @param item the item to dispense
+     * @param item  the item to dispense
+     * @return a boolean value showing is dispense was successful or not
      */
-    public void dispenseItem(Buyer buyer, Product item) {
+    public boolean dispenseItem(Buyer buyer, Product item) {
         if (item != null && processTransaction(buyer, item) && selectItem(item) != null) {
             item.setStock(item.getStock() - 1);
             System.out.println(item.getName() + " has been dispensed");
@@ -39,9 +41,11 @@ public class VendingMachine implements TransactionHandler{
             String time = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
             String log = String.format("%s - %s sold for $%.2f", time, item.getName(), item.getPrice());
             salesLog.add(log);
-        } else {
-            System.out.println("Selected item has not been dispensed due to Transaction failure.");
+            return true;
         }
+
+        System.out.println("Selected item has not been dispensed due to Transaction failure.");
+        return false;
     }
 
     /**
@@ -51,7 +55,8 @@ public class VendingMachine implements TransactionHandler{
      */
     public Product selectItem(Product product) {
        for (Product p : inventory) {
-           if (p.getName().equals(p.getName()) && p.getStock() > 0) {
+           String name = p.getName();
+           if (name.equals(p.getName()) && p.getStock() > 0) {
                return p;
            }
        }
@@ -128,20 +133,21 @@ public class VendingMachine implements TransactionHandler{
      */
     @Override
     public boolean processTransaction(Buyer buyer, Product item) {
-        double total = currentSessionMoney.calculateTotal();
-
         if (selectItem(item) == null) {
+            System.out.println("Selected item not available.");
             return false;
         }
 
+        double total = currentSessionMoney.calculateTotal();
         if (total < item.getPrice()) {
             System.out.println("Insufficient funds");
             return false;
         }
 
         double change = total - item.getPrice();
-        System.out.printf("Transaction successful. Change returned: $%.2f", change);
+
         currentSessionMoney.clear();
+        System.out.printf("Transaction successful. Change returned: $%.2f%n", change);
         return true;
     }
 

@@ -1,88 +1,106 @@
 package org.example;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class Buyer extends User{
+public class Buyer extends User {
     private Product selectedProduct;
     private final List<Product> purchaseHistory;
 
     public Buyer() {
         super("Unknown Buyer");
-        purchaseHistory = new ArrayList<>();
+        this.purchaseHistory = new ArrayList<>();
         this.selectedProduct = null;
     }
 
     public Buyer(String name) {
         super(name);
-        this.selectedProduct = null;
         this.purchaseHistory = new ArrayList<>();
+        this.selectedProduct = null;
     }
 
     /**
-     * Allows the buyer to choose a product by its name from the vending machine inventory
-     * @param name The name of the product the buyer wants to select
-     * @param products The list of products available for selection
-     * @return The selected Product if found; otherwise, null
+     * Allows the buyer to choose a product by its name from the vending machine inventory.
+     * @param name The name of the product to select.
+     * @param products The list of available products.
+     * @return The selected Product if found; otherwise, null.
      */
     public Product chooseProduct(String name, List<Product> products) {
         if (products == null || products.isEmpty()) {
             displayMessage("The product list is empty or not available.");
             return null;
         }
+        if (name == null) {
+            displayMessage("Product name cannot be null.");
+            return null;
+        }
 
-        Product found = products.stream()
-                .filter(product -> product.getName().equals(name))
-                .findFirst()
-                .orElseGet(() -> {
-                    displayMessage("No such product found");
-                    return null;
-                });
+        for (Product product : products) {
+            if (product.getName().equals(name)) {
+                this.selectedProduct = product;
+                return product;
+            }
+        }
 
-        this.selectedProduct = found;
-        return found;
+        displayMessage("No such product found.");
+        this.selectedProduct = null;
+        return null;
     }
 
     /**
-     * Cancels the current order and resets any selections made by the buyer
+     * Cancels the current product selection.
      */
     public void cancelOrder() {
         if (selectedProduct != null) {
-            System.out.println(selectedProduct.getName() + " has been cancelled.");
+            displayMessage(selectedProduct.getName() + " has been cancelled.");
             selectedProduct = null;
+        } else {
+            displayMessage("No product selected to cancel.");
         }
-        displayMessage("No products selected to cancel.");
     }
 
     /**
-     * Finalizes the purchase of the selected product
-     * @param vendingMachine The vendingMachine from which the buyer will but the product from
+     * Attempts to purchase the selected product from the vending machine.
+     * @param vendingMachine The vending machine to purchase from.
      */
     public void buy(VendingMachine vendingMachine) {
         if (selectedProduct == null) {
-            displayMessage("You have not selected any product to buy.");
+            displayMessage("No product selected to buy.");
             return;
         }
-        vendingMachine.dispenseItem(this, selectedProduct);
-        addPurchaseHistory(selectedProduct);
+        if (vendingMachine == null) {
+            displayMessage("Vending machine is not available.");
+            selectedProduct = null;
+            return;
+        }
+
+        boolean success = vendingMachine.dispenseItem(this, selectedProduct);
+        if (success) {
+            addPurchaseHistory(selectedProduct);
+            displayMessage("Successfully purchased " + selectedProduct.getName() + ".");
+        } else {
+            displayMessage("Purchase failed due to insufficient funds or out of stock.");
+        }
+
         selectedProduct = null;
     }
 
     /**
-     * Displays a custom message intended for the buyer
-     * @param message The message to be displayed
+     * Displays a message to the buyer.
+     * @param message The message to display.
      */
     @Override
     public void displayMessage(String message) {
         if (message != null) {
-            System.out.println("Please note:" + message);
+            System.out.println("Buyer [" + getName() + "], please note: " + message);
         }
     }
 
     /**
-     * Adds product to purchase history of the user to retrieve typically in the VendingMachine class
-     * @param product the given product to add to the history of the user
+     * Adds a product to the buyer's purchase history.
+     * @param product The product to add.
      */
     public void addPurchaseHistory(Product product) {
         if (product != null) {
@@ -100,14 +118,16 @@ public class Buyer extends User{
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Buyer buyer = (Buyer) o;
-        return Objects.equals(selectedProduct, buyer.selectedProduct) && Objects.equals(purchaseHistory, buyer.purchaseHistory);
+        if (this == o) return true;
+        if (!(o instanceof Buyer buyer)) return false;
+        if (!super.equals(o)) return false;
+        return Objects.equals(selectedProduct, buyer.selectedProduct) &&
+                Objects.equals(purchaseHistory, buyer.purchaseHistory);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(selectedProduct, purchaseHistory);
+        return Objects.hash(super.hashCode(), selectedProduct, purchaseHistory);
     }
 
     public Product getSelectedProduct() {
@@ -119,6 +139,6 @@ public class Buyer extends User{
     }
 
     public List<Product> getPurchaseHistory() {
-        return purchaseHistory;
+        return Collections.unmodifiableList(purchaseHistory);
     }
 }
