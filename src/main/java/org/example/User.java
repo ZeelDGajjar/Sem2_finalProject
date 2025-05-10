@@ -1,5 +1,7 @@
 package org.example;
 
+import java.util.Objects;
+
 public abstract class User implements MessageDisplay {
     private int id;
     private String name;
@@ -18,6 +20,26 @@ public abstract class User implements MessageDisplay {
 
     public abstract void displayMessage(String message);
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id && Objects.equals(name, user.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
+    }
+
     public int getId() {
         return id;
     }
@@ -32,9 +54,5 @@ public abstract class User implements MessageDisplay {
 
     public static int getNextId() {
         return nextId;
-    }
-
-    public static void setNextId(int nextId) {
-        User.nextId = nextId;
     }
 }

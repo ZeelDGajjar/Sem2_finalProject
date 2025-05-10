@@ -33,28 +33,36 @@ public class Operator extends User {
      * Restores a specified amount of the given product back into the vending machine inventory
      * @param item The product to be restored
      * @param amount The number of units to add to the inventory
+     * @param vendingMachine The vendingMachine in which to restock the product
      */
-    public void restockProduct(Product item, int amount) {
-        item.setStock(item.getStock() + amount);
-        stockingHistory.put(item, amount);
+    public void restockProduct(Product item, int amount, VendingMachine vendingMachine) {
+        if (item == null) {
+            throw new IllegalArgumentException("Product cannot be null");
+        }
+        if (vendingMachine == null) {
+            throw new IllegalArgumentException("Vending machine cannot be null");
+        }
+        vendingMachine.reloadProduct(item, amount, this);
     }
 
     /**
      * Updates the selling price of a specific product in the vending machine
      * @param item The product whose price is being updates
      * @param price The new price to assign to the product
+     * @param vendingMachine The vendingMachine in which to restock the product
      */
-    public void updateProductPrice(Product item, double price) {
-        if (this.accessLevel != AccessLevel.ADMIN) {
-            displayMessage("Access denied");
+    public void updateProductPrice(Product item, double price, VendingMachine vendingMachine) {
+        if (price < 0) {
+            System.out.println("Invalid price. Price cannot be negative.");
             return;
         }
-
-        if (price < 0) {
-            throw new IllegalArgumentException("Price cannot be negative");
+        if (item == null) {
+            throw new IllegalArgumentException("Product cannot be null");
         }
-
-        item.setPrice(price);
+        if (vendingMachine == null) {
+            throw new IllegalArgumentException("Vending machine cannot be null");
+        }
+        vendingMachine.changePrice(item, price, this);
     }
 
     /**
@@ -62,9 +70,21 @@ public class Operator extends User {
      * @param vendingMachine The vending machine whose profit sheet needs to be reviewed
      */
     public void reviewProfitSheet(VendingMachine vendingMachine) {
-        Path filename = Path.of("../resources/ProfitSheet.txt");
-        vendingMachine.readProfitSheet(filename);
-        profitSheets.add(filename);
+        Path filePath = Path.of("../resources/ProfitSheet.txt");
+
+        if (vendingMachine == null) {
+            throw new IllegalArgumentException("Vending machine cannot be null");
+        }
+        if (accessLevel != AccessLevel.ADMIN) {
+            displayMessage("Access denied: Only ADMIN can review profit sheets");
+            return;
+        }
+
+        vendingMachine.readProfitSheet(filePath);
+        if (!profitSheets.contains(filePath)) {
+            profitSheets.add(filePath);
+        }
+        displayMessage("Profit sheet at " + filePath + " reviewed");
     }
 
     /**
@@ -73,19 +93,25 @@ public class Operator extends User {
      */
     @Override
     public void displayMessage(String message) {
-        System.out.println("Please note:" + message);
+        if (message != null) {
+            System.out.println("Operator " + getName() + ", please note:" + message);
+        }
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Operator operator = (Operator) o;
-        return Objects.equals(accessLevel, operator.accessLevel) && Objects.equals(profitSheets, operator.profitSheets) && Objects.equals(stockingHistory, operator.stockingHistory);
+        if (this == o) return true;
+        if (!super.equals(o)) return false;        // include User’s fields
+        if (getClass() != o.getClass()) return false;
+        Operator that = (Operator) o;
+        return accessLevel == that.accessLevel
+                && Objects.equals(profitSheets, that.profitSheets)
+                && Objects.equals(stockingHistory, that.stockingHistory);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(accessLevel, profitSheets, stockingHistory);
+        return Objects.hash(super.hashCode(), accessLevel, profitSheets, stockingHistory);
     }
 
     @Override
