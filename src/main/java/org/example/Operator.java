@@ -42,7 +42,12 @@ public class Operator extends User {
         if (vendingMachine == null) {
             throw new IllegalArgumentException("Vending machine cannot be null");
         }
+
         vendingMachine.reloadProduct(item, amount, this);
+        stockingHistory.merge(item, amount, Integer::sum);
+
+        displayMessage("Restocked " + amount + " units of " + item.getName() +
+                ". Expiry Date: " + item.getExpiryDate());
     }
 
     /**

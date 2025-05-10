@@ -6,154 +6,188 @@ import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.*;
 
-public class VendingMachine implements TransactionHandler{
+public class VendingMachine implements TransactionHandler {
     private List<User> users;
     private List<Product> inventory;
     private Money currentSessionMoney;
     private List<String> salesLog;
 
     public VendingMachine() {
-        users = new ArrayList<>();
-        inventory = new LinkedList<>();
-        currentSessionMoney = new Money();
-        salesLog = new ArrayList<>();
+        this.users = new ArrayList<>();
+        this.inventory = new LinkedList<>();
+        this.currentSessionMoney = new Money();
+        this.salesLog = new ArrayList<>();
     }
 
     public VendingMachine(List<User> users, List<Product> inventory, Money currentSessionMoney) {
         this.users = users;
         this.inventory = inventory;
         this.currentSessionMoney = currentSessionMoney;
-        salesLog = new ArrayList<>();
+        this.salesLog = new ArrayList<>();
     }
 
     /**
-     * Dispenses selected item once the transaction is successfully completed
-     *
-     * @param buyer the buyer doing the performance
-     * @param item  the item to dispense
-     * @return a boolean value showing is dispense was successful or not
+     * Dispenses the selected item once the transaction is successful.
+     * @param buyer The given buyer performing the action
+     * @param item The given item to dispense
+     * @return a boolean value showing if the action was successful or not
      */
     public boolean dispenseItem(Buyer buyer, Product item) {
-        if (item != null && processTransaction(buyer, item) && selectItem(item) != null) {
-            item.setStock(item.getStock() - 1);
-            System.out.println(item.getName() + " has been dispensed");
-
-            String time = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            String log = String.format("%s - %s sold for $%.2f", time, item.getName(), item.getPrice());
-            salesLog.add(log);
-            return true;
+        if (item == null) {
+            System.out.println("No item selected to dispense.");
+            return false;
+        }
+        if (!inventory.contains(item) || item.getStock() <= 0) {
+            System.out.println(item.getName() + " is not available.");
+            return false;
+        }
+        if (item.isExpired()) {
+            System.out.println("Cannot dispense " + item.getName() + " because it is expired (expired on " + item.getExpiryDate() + ").");
+            return false;
+        }
+        if (!processTransaction(buyer, item)) {
+            System.out.println("Selected item has not been dispensed due to transaction failure.");
+            return false;
         }
 
-        System.out.println("Selected item has not been dispensed due to Transaction failure.");
-        return false;
+        item.reduceStock(1);
+        System.out.println(item.getName() + " has been dispensed");
+        String time = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        String log = String.format("%s - %s sold for $%.2f", time, item.getName(), item.getPrice());
+        salesLog.add(log);
+        return true;
     }
 
     /**
-     * Allows a user to select an item from the inventory by name
-     * @param product The name of the product the user wants to select
-     * @return The matching Product if found; otherwise, null
+     * Returns the product from inventory matching by name, if in stock.
+     * @param product The given product to select from the vending machine
+     * @return A product value selected to continue the process
      */
     public Product selectItem(Product product) {
-       for (Product p : inventory) {
-           String name = p.getName();
-           if (name.equals(p.getName()) && p.getStock() > 0) {
-               return p;
-           }
-       }
-
-       System.out.println("Product is out of stock");
-       return null;
+        if (product == null) return null;
+        for (Product p : inventory) {
+            if (p.getName().equals(product.getName()) && p.getStock() > 0) {
+                if (p.isExpired()) {
+                    System.out.println("Cannot select " + p.getName() + " because it is expired.");
+                    return null;
+                }
+                return p;
+            }
+        }
+        System.out.println("Product " + product.getName() + " is out of stock or not found");
+        return null;
     }
 
     /**
-     * Adds money to the current session for purchasing products
-     * @param money The Money object representing the amount inserted by the user
+     * Adds money to the current session.
+     * @param money The given money to add to the session
      */
     public void addMoney(Money money) {
-        if (money != null && money.calculateTotal() != 0) {
+        if (money != null && money.calculateTotal() > 0) {
             currentSessionMoney.add(money.getCashMap());
         }
     }
 
     /**
-     * Displays the list of available products in the inventory
+     * Displays all products in stock.
      */
     public void showInventory() {
-        inventory.forEach(item -> System.out.printf("%s - Stock: %d - Price: $%.2f%n",
-                item.getName(), item.getStock(), item.getPrice()));
+        inventory.forEach(Product::displayLabel);
     }
 
     /**
-     * Reloads or adds stock for an existing or new product with a specified price
-     * @param item The product to be reloaded into inventory
-     * @param amount The amount of item to add
-     * @param operator The operator who is reloading the product
+     * Reloads stock for a product, respecting max capacity.
+     * @param item the given item to reload
+     * @param amount the given amount to reload by
+     * @param operator the given operator performing the action
      */
     public void reloadProduct(Product item, int amount, Operator operator) {
         if (amount <= 0) {
-            System.out.println("Invalid amount to reload. Must be a positive integer.");
+            System.out.println("Invalid amount to reload. Must be positive.");
             return;
         }
-
-        int newStock = Math.min(item.getStock() + amount, item.getMaxCapacity());
-        item.setStock(newStock);
-
+        if (item.isExpired()) {
+            System.out.println("Cannot reload " + item.getName() + " because it is expired.");
+            return;
+        }
+        item.restock(amount);
         if (!inventory.contains(item)) {
             inventory.add(item);
         }
-
-        operator.getStockingHistory().put(item,amount);
+        operator.getStockingHistory().put(item, amount);
         System.out.println("Product reloaded: " + item.getName() + " by " + amount + " units.");
     }
 
     /**
-     * Changes the selling price of an existing product in the inventory
-     * @param item The product whose price is to be updated
-     * @param price The new price for the product
+     * Changes product price if operator has ADMIN access.
+     * @param item the item whose price needs to be changed
+     * @param price the given price to set
+     * @param operator the given operator performing the action
      */
     public void changePrice(Product item, double price, Operator operator) {
         if (price < 0) {
             System.out.println("Invalid price. Price cannot be negative.");
             return;
         }
-
         if (operator.getAccessLevel() == AccessLevel.ADMIN) {
             item.setPrice(price);
-            System.out.println("Successfully changed price of " + item.getName() + ". New price set to: " + price + " dollars.");
-            return;
+            System.out.println("Successfully changed price of " + item.getName() + ". New price: " + price);
+        } else {
+            System.out.println("You don't have access to perform this operation.");
         }
-        System.out.println("You don't have access to perform this operation.");
     }
 
     /**
-     * Processes a transaction by checking if the buyer has enough money to purchase the item
-     * @param buyer The buyer attempting to purchase a product
-     * @param item The product the buyer wants to purchase
-     * @return true if the transaction is successful; false otherwise
+     * Processes the payment and dispenses change if possible.
+     * @param buyer the buyer doing the transaction
+     * @param item the item involved transaction
+     * @return a boolean value to show if it's process was successful or not
      */
-    @Override
     public boolean processTransaction(Buyer buyer, Product item) {
-        if (selectItem(item) == null) {
+        Product available = selectItem(item);
+        if (available == null) {
             System.out.println("Selected item not available.");
             return false;
         }
-
         double total = currentSessionMoney.calculateTotal();
-        if (total < item.getPrice()) {
+        if (total < available.getPrice()) {
             System.out.println("Insufficient funds");
             return false;
         }
-
-        double change = total - item.getPrice();
-
+        double change = total - available.getPrice();
+        Map<Double, Integer> changeMap = change > 0
+                ? currentSessionMoney.getChange(change)
+                : Collections.emptyMap();
+        if (change > 0 && changeMap == null) {
+            System.out.println("Unable to provide exact change. Transaction cancelled.");
+            return false;
+        }
+        if (!changeMap.isEmpty()) {
+            currentSessionMoney.subtract(changeMap);
+            System.out.println("Change dispensed: " + changeMap);
+        }
         currentSessionMoney.clear();
         System.out.printf("Transaction successful. Change returned: $%.2f%n", change);
         return true;
     }
 
     /**
-     * Reads and processes the profit sheet from a specified file
-     * @param fileName The name of the file containing profit information
+     * Removes expired products
+     */
+    public void removeExpiredProducts() {
+        Iterator<Product> iterator = inventory.iterator();
+        while (iterator.hasNext()) {
+            Product product = iterator.next();
+            if (product.isExpired()) {
+                iterator.remove();
+                System.out.println("Removed expired product: " + product.getName());
+            }
+        }
+    }
+
+    /**
+     * Reads a profit sheet from a file path.
+     * @param fileName The given file from which to read the profit from
      */
     public static void readProfitSheet(Path fileName) {
         File file = fileName.toFile();
@@ -161,12 +195,10 @@ public class VendingMachine implements TransactionHandler{
             System.out.println("Profit sheet file not found: " + fileName);
             return;
         }
-
         System.out.println("=== PROFIT SHEET: " + fileName + " ===");
         try (Scanner scanner = new Scanner(file)) {
             while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                System.out.println(line);
+                System.out.println(scanner.nextLine());
             }
         } catch (FileNotFoundException e) {
             System.out.println("Error reading profit sheet: " + e.getMessage());
@@ -174,27 +206,21 @@ public class VendingMachine implements TransactionHandler{
     }
 
     /**
-     * Writes vending machine inventory stocking and sales data to a file for record-keeping
+     * Writes inventory and sales data to a history file.
      */
     public void writeToFile() {
         try (PrintWriter writer = new PrintWriter("./resources/VendingMachine_History.txt")) {
-
             writer.println("=== INVENTORY ===");
             for (Product item : inventory) {
                 writer.printf("%s,%.2f,%d%n", item.getName(), item.getPrice(), item.getStock());
             }
-
             writer.println("\n=== TRANSACTIONS ===");
-            if (salesLog != null && !salesLog.isEmpty()) {
-                for (String logEntry : salesLog) {
-                    writer.println(logEntry);
-                }
+            if (!salesLog.isEmpty()) {
+                salesLog.forEach(writer::println);
             } else {
                 writer.println("No transactions recorded.");
             }
-
             System.out.println("Vending machine data written to file.");
-
         } catch (FileNotFoundException e) {
             System.out.println("Could not write to file. Please check the file path.");
         }
