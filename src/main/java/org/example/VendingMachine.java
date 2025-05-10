@@ -158,8 +158,8 @@ public class VendingMachine implements TransactionHandler {
         Map<Double, Integer> changeMap = change > 0
                 ? currentSessionMoney.getChange(change)
                 : Collections.emptyMap();
-        if (change > 0 && changeMap == null) {
-            System.out.println("Unable to provide exact change. Transaction cancelled.");
+        if (change > 0 && changeMap.isEmpty()) {
+            System.out.printf("Unable to provide exact change ($%.2f). Transaction cancelled.%n", change);
             return false;
         }
         if (!changeMap.isEmpty()) {
