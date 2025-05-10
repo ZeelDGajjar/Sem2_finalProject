@@ -127,7 +127,7 @@ public class Money {
             if (toUse > 0) {
                 change.put(denom, toUse);
                 amount -= denom * toUse;
-                amount = Math.round(amount * 100.0) / 100.0;
+                amount = Math.round(amount * 100.0) / 100.0; // round to avoid floating-point precision issues
             }
 
             if (amount == 0.0) {
@@ -138,7 +138,7 @@ public class Money {
         if (amount == 0.0) {
             return change;
         } else {
-            return null;
+            return Collections.emptyMap();
         }
     }
 
