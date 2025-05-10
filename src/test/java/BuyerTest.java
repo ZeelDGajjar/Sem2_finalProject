@@ -1,4 +1,4 @@
-package org.example;
+import org.example.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -126,8 +126,7 @@ public class BuyerTest {
         VendingMachine vm = new VendingMachine();
         Product chips = new Snack("Chips", 1.5, "snack", 5, 10, "100 cal", LocalDate.now().plusDays(10), 100);
         vm.getInventory().add(chips);
-        vm.addMoney(new Money(Map.of(2.0, 1))); // $2.00 provided
-        vm.addChange(new Money(Map.of(0.25, 2))); // Two quarters for $0.50 change
+        vm.addMoney(new Money(Map.of(0.25, 6))); // Exact payment: 6 quarters = $1.50
         buyer.setSelectedProduct(chips);
         buyer.buy(vm);
         assertTrue(buyer.getPurchaseHistory().contains(chips));
@@ -151,7 +150,6 @@ public class BuyerTest {
         Product chips = new Snack("Chips", 1.5, "snack", 5, 10, "100 cal", LocalDate.now().plusDays(10), 100);
         vm.getInventory().add(chips);
         vm.addMoney(new Money(Map.of(1.0, 1))); // Only $1.00, not enough
-        vm.addChange(new Money(Map.of(0.25, 2)));
         buyer.setSelectedProduct(chips);
         buyer.buy(vm);
         assertTrue(buyer.getPurchaseHistory().isEmpty());
@@ -165,8 +163,7 @@ public class BuyerTest {
         VendingMachine vm = new VendingMachine();
         Product chips = new Snack("Chips", 1.5, "snack", 0, 10, "100 cal", LocalDate.now().plusDays(10), 100);
         vm.getInventory().add(chips);
-        vm.addMoney(new Money(Map.of(2.0, 1)));
-        vm.addChange(new Money(Map.of(0.25, 2)));
+        vm.addMoney(new Money(Map.of(0.25, 6))); // $1.50
         buyer.setSelectedProduct(chips);
         buyer.buy(vm);
         assertTrue(buyer.getPurchaseHistory().isEmpty());
@@ -190,8 +187,7 @@ public class BuyerTest {
         VendingMachine vm = new VendingMachine();
         Product chips = new Snack("Chips", 1.5, "snack", 5, 10, "100 cal", LocalDate.now().minusDays(1), 100);
         vm.getInventory().add(chips);
-        vm.addMoney(new Money(Map.of(2.0, 1)));
-        vm.(new Money(Map.of(0.25, 2)));
+        vm.addMoney(new Money(Map.of(0.25, 6))); // $1.50
         buyer.setSelectedProduct(chips);
         buyer.buy(vm);
         assertTrue(buyer.getPurchaseHistory().isEmpty());
@@ -206,7 +202,7 @@ public class BuyerTest {
         Product chips = new Snack("Chips", 1.5, "snack", 5, 10, "100 cal", LocalDate.now().plusDays(10), 100);
         vm.getInventory().add(chips);
         vm.addMoney(new Money(Map.of(2.0, 1))); // $2.00, needs $0.50 change
-        // No change added, so cannot provide $0.50
+        // No change denominations added
         buyer.setSelectedProduct(chips);
         buyer.buy(vm);
         assertTrue(buyer.getPurchaseHistory().isEmpty());

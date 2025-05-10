@@ -39,10 +39,6 @@ public class Buyer extends User {
 
         for (Product product : products) {
             if (product.getName().equals(name)) {
-                if (product.isExpired()) {
-                    displayMessage("Cannot select " + product.getName() + " because it is expired (expired on " + product.getExpiryDate() + ").");
-                    return null;
-                }
                 this.selectedProduct = product;
                 return product;
             }
@@ -76,13 +72,6 @@ public class Buyer extends User {
         }
         if (vendingMachine == null) {
             displayMessage("Vending machine is not available.");
-            selectedProduct = null;
-            return;
-        }
-
-        if (selectedProduct.isExpired()) {
-            displayMessage("Cannot purchase " + selectedProduct.getName() + " because it is expired (expired on " + selectedProduct.getExpiryDate() + ").");
-            selectedProduct = null;
             return;
         }
 
@@ -91,7 +80,7 @@ public class Buyer extends User {
             addPurchaseHistory(selectedProduct);
             displayMessage("Successfully purchased " + selectedProduct.getName() + ".");
         } else {
-            displayMessage("Purchase failed due to insufficient funds or out of stock.");
+            displayMessage("Purchase failed: insufficient funds or out of stock.");
         }
 
         selectedProduct = null;
