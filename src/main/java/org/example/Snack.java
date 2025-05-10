@@ -1,17 +1,18 @@
 package org.example;
 
+import java.time.LocalDate;
 import java.util.Objects;
 
 public class Snack extends Product {
     public int weightInGrams;
 
     public Snack() {
-        super("", 0, "", 0, 5);
+        super();
         this.weightInGrams = 1;
     }
 
-    public Snack(String name, double price, String category, int stock, int MaxCapacity, int weightInGrams) {
-        super(name, price, category, stock, MaxCapacity);
+    public Snack(String name, double price, String category, int stock, int MaxCapacity, String nutritionalInfo, LocalDate expiryDate, int weightInGrams) {
+        super(name, price, category, stock, MaxCapacity, nutritionalInfo, expiryDate);
         this.weightInGrams = weightInGrams;
     }
 

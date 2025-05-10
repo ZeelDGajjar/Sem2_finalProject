@@ -1,17 +1,18 @@
 package org.example;
 
+import java.time.LocalDate;
 import java.util.Objects;
 
 public class Drink extends Product{
     private int volumeInML;
 
     public Drink() {
-        super("", 0,"", 0, 5);
+        super();
         this.volumeInML = 0;
     }
 
-    public Drink(String name, double price, String category, int stock, int MaxCapacity, int volumeInML) {
-        super(name, price, category, stock, MaxCapacity);
+    public Drink(String name, double price, String category, int stock, int MaxCapacity, String nutritionalInfo, LocalDate expiryDate, int volumeInML) {
+        super(name, price, category, stock, MaxCapacity, nutritionalInfo, expiryDate);
         this.volumeInML = volumeInML;
     }
 
