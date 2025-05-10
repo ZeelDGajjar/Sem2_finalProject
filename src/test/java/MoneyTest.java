@@ -1,141 +1,191 @@
-import org.example.Money;
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.example.*;
 
+import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class MoneyTest {
 
+    // === add Tests ===
     @Test
-    public void testAdd_EmptyMap() {
+    void testAdd_ValidDenominations() {
         Money money = new Money();
-        money.add(new HashMap<>());
+        Map<Double, Integer> cash = Map.of(1.0, 2, 0.5, 1);
+
+        money.add(cash);
+        assertEquals(2, money.getCashMap().getOrDefault(1.0, 0));
+        assertEquals(1, money.getCashMap().getOrDefault(0.5, 0));
+    }
+
+    @Test
+    void testAdd_NullMap() {
+        Money money = new Money();
+
+        assertThrows(NullPointerException.class, () -> money.add(null));
         assertTrue(money.getCashMap().isEmpty());
     }
 
     @Test
-    public void testAdd_ZeroOrNegativeQuantities() {
+    void testAdd_ZeroQuantity() {
         Money money = new Money();
-        Map<Double, Integer> badCash = Map.of(
-                1.0, 0,
-                2.0, -3
-        );
-        money.add(badCash);
+        Map<Double, Integer> cash = Map.of(1.0, 0);
+
+        money.add(cash);
+        assertFalse(money.getCashMap().containsKey(1.0));
+    }
+
+    @Test
+    void testAdd_NegativeQuantity() {
+        Money money = new Money();
+        Map<Double, Integer> cash = new HashMap<>();
+        cash.put(1.0, -1);
+
+        money.add(cash);
+        assertFalse(money.getCashMap().containsKey(1.0));
+    }
+
+    @Test
+    void testAdd_ExistingDenomination() {
+        Money money = new Money(Map.of(1.0, 1));
+        Map<Double, Integer> cash = Map.of(1.0, 2);
+
+        money.add(cash);
+        assertEquals(3, money.getCashMap().getOrDefault(1.0, 0));
+    }
+
+    // === subtract Tests ===
+    @Test
+    void testSubtract_ValidDenominations() {
+        Money money = new Money(Map.of(1.0, 3, 0.5, 2));
+        Map<Double, Integer> cash = Map.of(1.0, 1, 0.5, 1);
+
+        money.subtract(cash);
+        assertEquals(2, money.getCashMap().getOrDefault(1.0, 0));
+        assertEquals(1, money.getCashMap().getOrDefault(0.5, 0));
+    }
+
+    @Test
+    void testSubtract_NullMap() {
+        Money money = new Money(Map.of(1.0, 1));
+
+        assertThrows(NullPointerException.class, () -> money.subtract(null));
+        assertEquals(1, money.getCashMap().getOrDefault(1.0, 0));
+    }
+
+    @Test
+    void testSubtract_InsufficientQuantity() {
+        Money money = new Money(Map.of(1.0, 1));
+        Map<Double, Integer> cash = Map.of(1.0, 2);
+
+        assertThrows(IllegalArgumentException.class, () -> money.subtract(cash));
+        assertEquals(1, money.getCashMap().getOrDefault(1.0, 0));
+    }
+
+    @Test
+    void testSubtract_ZeroQuantity() {
+        Money money = new Money(Map.of(1.0, 1));
+        Map<Double, Integer> cash = Map.of(1.0, 0);
+
+        money.subtract(cash);
+        assertEquals(1, money.getCashMap().getOrDefault(1.0, 0));
+    }
+
+    @Test
+    void testSubtract_RemovesDenomination() {
+        Money money = new Money(Map.of(1.0, 1));
+        Map<Double, Integer> cash = Map.of(1.0, 1);
+
+        money.subtract(cash);
+        assertFalse(money.getCashMap().containsKey(1.0));
+    }
+
+    // === calculateTotal Tests ===
+    @Test
+    void testCalculateTotal_ValidDenominations() {
+        Money money = new Money(Map.of(1.0, 2, 0.5, 1));
+
+        assertEquals(2.5, money.calculateTotal(), 0.001);
+    }
+
+    @Test
+    void testCalculateTotal_EmptyMap() {
+        Money money = new Money();
+
+        assertEquals(0.0, money.calculateTotal(), 0.001);
+    }
+
+    @Test
+    void testCalculateTotal_SingleDenomination() {
+        Money money = new Money(Map.of(1.0, 3));
+
+        assertEquals(3.0, money.calculateTotal(), 0.001);
+    }
+
+    @Test
+    void testCalculateTotal_ZeroQuantity() {
+        Money money = new Money(Map.of(1.0, 0));
+
+        assertEquals(0.0, money.calculateTotal(), 0.001);
+    }
+
+    // === clear Tests ===
+    @Test
+    void testClear_NonEmptyMap() {
+        Money money = new Money(Map.of(1.0, 2));
+
+        money.clear();
         assertTrue(money.getCashMap().isEmpty());
     }
 
     @Test
-    public void testAdd_NewDenomination() {
-        Money money = new Money();
-        Map<Double, Integer> cashToAdd = Map.of(5.0, 3);
-        money.add(cashToAdd);
-        assertEquals(3, money.getCashMap().get(5.0));
-    }
-
-    @Test
-    public void testAdd_NullInput() {
-        Money money = new Money();
-        assertThrows(NullPointerException.class, () -> {
-            money.subtract(null);
-        });
-    }
-
-    @Test
-    public void testAdd_NullValueInMap() {
+    void testClear_EmptyMap() {
         Money money = new Money();
 
-        Map<Double, Integer> cashWithNullValue = new HashMap<>();
-        cashWithNullValue.put(1.0, null);
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            money.add(cashWithNullValue);
-        });
-        assertTrue(exception.getMessage().contains("Invalid key or value in map"));
-    }
-
-    @Test
-    public void testSubtract_EmptyMap() {
-        Money money = new Money();
-        money.subtract(new HashMap<>());
+        money.clear();
         assertTrue(money.getCashMap().isEmpty());
     }
 
+    // === getChange Tests ===
     @Test
-    public void testSubtract_NonExistentDenomination() {
-        Money money = new Money();
-        money.add(Map.of(1.0, 2));
+    void testGetChange_ExactChange() {
+        Money money = new Money(Map.of(1.0, 2, 0.5, 1));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            money.subtract(Map.of(5.0, 1));
-        });
-
-        assertTrue(exception.getMessage().contains("Not enough"));
+        Map<Double, Integer> change = money.getChange(1.5);
+        assertEquals(Map.of(1.0, 1, 0.5, 1), change);
     }
 
     @Test
-    public void testSubtract_ExactRemoval() {
-        Money money = new Money();
-        money.add(Map.of(0.5, 1));
-        money.subtract(Map.of(0.5, 1));
-        assertFalse(money.getCashMap().containsKey(0.5));
+    void testGetChange_InsufficientDenominations() {
+        Money money = new Money(Map.of(2.0, 1));
+
+        Map<Double, Integer> change = money.getChange(0.5);
+        assertEquals(Collections.emptyMap(), change);
     }
 
     @Test
-    public void testSubtract_NullInput() {
-        Money money = new Money();
-        assertThrows(NullPointerException.class, () -> {
-            money.subtract(null);
-        });
+    void testGetChange_ZeroAmount() {
+        Money money = new Money(Map.of(1.0, 1));
+
+        Map<Double, Integer> change = money.getChange(0.0);
+        assertEquals(Collections.emptyMap(), change);
     }
 
     @Test
-    public void testSubtract_NullValueInMap() {
-        Money money = new Money();
-        money.add(Map.of(1.0, 3));
+    void testGetChange_NegativeAmount() {
+        Money money = new Money(Map.of(1.0, 1));
 
-        Map<Double, Integer> badCash = new HashMap<>();
-        badCash.put(1.0, null);
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            money.subtract(badCash);
-        });
-
-        assertEquals("Invalid quantity", exception.getMessage());
+        assertThrows(IllegalArgumentException.class, () -> money.getChange(-0.5));
     }
 
     @Test
-    public void testCalculateTotal_SimpleTotal() {
-        Money money = new Money();
-        money.add(Map.of(1.0, 4, 2.0, 3, 0.5, 2));
-
-        double expectedTotal = 1.0 * 4 + 2.0 * 3 + 0.5 * 2;
-        assertEquals(expectedTotal, money.calculateTotal(), 0.0001);
-    }
-
-    @Test
-    public void testCalculateTotal_EmptyMap() {
-        Money money = new Money();
-        assertEquals(0.0, money.calculateTotal(), 0.0001);
-    }
-
-    @Test
-    public void testCalculateTotal_ZeroAndNegativeQuantities() {
-        Money money = new Money();
-        money.add(Map.of(1.0, 0, 2.0, -2));
-        assertEquals(0.0, money.calculateTotal(), 0.0001);
-    }
-
-    @Test
-    public void testCalculateTotal_NullMap() {
+    void testGetChange_EmptyMap() {
         Money money = new Money();
 
-        money.setCashMap(null);
-
-        NullPointerException exception = assertThrows(NullPointerException.class, () -> {
-            money.calculateTotal();
-        });
-
-        assertEquals("Cash map cannot be null", exception.getMessage());
+        Map<Double, Integer> change = money.getChange(1.0);
+        assertEquals(Collections.emptyMap(), change);
     }
 }
