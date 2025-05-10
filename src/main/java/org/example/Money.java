@@ -1,8 +1,6 @@
 package org.example;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class Money {
     private Map<Double, Integer> cashMap;
@@ -12,7 +10,7 @@ public class Money {
     }
 
     public Money(Map<Double, Integer> cashMap) {
-        this.cashMap = cashMap == null ? new HashMap<>() : cashMap;
+        this.cashMap = (cashMap == null ? new HashMap<>() : new HashMap<>(cashMap));
     }
 
     /**
@@ -31,8 +29,9 @@ public class Money {
 
             double denomination = entry.getKey();
             int count = entry.getValue();
-            if (count <= 0) continue;
-
+            if (count <= 0) {
+                continue;
+            }
             this.cashMap.put(denomination, this.cashMap.getOrDefault(denomination, 0) + count);
         }
     }
@@ -50,13 +49,13 @@ public class Money {
             if (entry.getValue() == null) {
                 throw new IllegalArgumentException("Invalid quantity");
             }
-        }
-
-        for (Map.Entry<Double, Integer> entry : cash.entrySet()) {
+            
             double denomination = entry.getKey();
             int countToSubtract = entry.getValue();
-            if (countToSubtract <= 0) continue;
-
+            if (countToSubtract <= 0) {
+                continue;
+            }
+            
             int currentCount = this.cashMap.getOrDefault(denomination, 0);
 
             if (countToSubtract > currentCount) {
@@ -99,6 +98,50 @@ public class Money {
         this.cashMap.clear();
     }
 
+    /**
+     * Tries to compute the exact change using the current cashMap.
+     * @param amount the amount of the change to return
+     * @return a map of denominations to quantities, or null if change cannot be made.
+     */
+    public Map<Double, Integer> getChange(double amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("Change amount cannot be negative.");
+        }
+
+        Map<Double, Integer> available = new TreeMap<>(Collections.reverseOrder());
+        available.putAll(cashMap);
+
+        Map<Double, Integer> change = new LinkedHashMap<>();
+
+        for (Map.Entry<Double, Integer> entry : available.entrySet()) {
+            double denom = entry.getKey();
+            int availableCount = entry.getValue();
+
+            if (denom > amount || availableCount == 0) {
+                continue;
+            }
+
+            int needed = (int) (amount / denom);
+            int toUse = Math.min(needed, availableCount);
+
+            if (toUse > 0) {
+                change.put(denom, toUse);
+                amount -= denom * toUse;
+                amount = Math.round(amount * 100.0) / 100.0;
+            }
+
+            if (amount == 0.0) {
+                break;
+            }
+        }
+
+        if (amount == 0.0) {
+            return change;
+        } else {
+            return null;
+        }
+    }
+
     @Override
     public String toString() {
         return "Money{" + "cashMap=" + cashMap + '}';
@@ -117,7 +160,7 @@ public class Money {
     }
 
     public Map<Double, Integer> getCashMap() {
-        return cashMap;
+        return new HashMap<>(cashMap);
     }
 
     public void setCashMap(Map<Double, Integer> cashMap) {
