@@ -25,6 +25,5 @@ public class Main {
         Scanner idScanner = new Scanner(System.in);
         String id = idScanner.nextLine();
 
-
     }
 }

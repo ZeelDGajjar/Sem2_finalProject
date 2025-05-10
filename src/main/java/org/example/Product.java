@@ -3,11 +3,6 @@ package org.example;
 import java.time.LocalDate;
 import java.util.Objects;
 
-/**
- * Represents a general product in the vending machine system.
- * Provides basic functionality such as stock management, price comparison,
- * and label display. Meant to be extended by specific product types (e.g., Snack, Drink).
- */
 public class Product implements Comparable<Product> {
     private String name;
     private double price;

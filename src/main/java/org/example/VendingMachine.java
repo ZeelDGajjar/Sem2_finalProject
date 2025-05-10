@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.*;
 
-public class VendingMachine implements TransactionHandler {
+public class VendingMachine {
     private List<User> users;
     private List<Product> inventory;
     private Money currentSessionMoney;
@@ -166,6 +166,7 @@ public class VendingMachine implements TransactionHandler {
             currentSessionMoney.subtract(changeMap);
             System.out.println("Change dispensed: " + changeMap);
         }
+        buyer.addPurchaseHistory(item);
         currentSessionMoney.clear();
         System.out.printf("Transaction successful. Change returned: $%.2f%n", change);
         return true;

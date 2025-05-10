@@ -127,7 +127,7 @@ public class Money {
             if (toUse > 0) {
                 change.put(denom, toUse);
                 amount -= denom * toUse;
-                amount = Math.round(amount * 100.0) / 100.0; // round to avoid floating-point precision issues
+                amount = Math.round(amount * 100.0) / 100.0;
             }
 
             if (amount == 0.0) {
