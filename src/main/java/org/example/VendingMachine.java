@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.*;
 
-public class VendingMachine {
+public class VendingMachine implements TransactionHandler{
     private List<User> users;
     private List<Product> inventory;
     private Money currentSessionMoney;
