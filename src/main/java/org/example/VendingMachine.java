@@ -158,7 +158,7 @@ public class VendingMachine implements TransactionHandler{
         Map<Double, Integer> changeMap = change > 0
                 ? currentSessionMoney.getChange(change)
                 : Collections.emptyMap();
-        if (change > 0 && changeMap.isEmpty()) {
+        if (change < 0 && changeMap.isEmpty()) {
             System.out.printf("Unable to provide exact change ($%.2f). Transaction cancelled.%n", change);
             return false;
         }
@@ -210,7 +210,7 @@ public class VendingMachine implements TransactionHandler{
      * Writes inventory and sales data to a history file.
      */
     public void writeToFile() {
-        try (PrintWriter writer = new PrintWriter("./resources/VendingMachine_History.txt")) {
+        try (PrintWriter writer = new PrintWriter("src/main/resources/VendingMachine_History.txt")) {
             writer.println("=== INVENTORY ===");
             for (Product item : inventory) {
                 writer.printf("%s,%.2f,%d%n", item.getName(), item.getPrice(), item.getStock());

@@ -1,0 +1,8 @@
+=== INVENTORY ===
+Chips,1.50,7
+Cola,2.00,3
+Candy,1.25,12
+Water,1.20,5
+
+=== TRANSACTIONS ===
+2025-05-11 22:41:25 - Chips sold for $1.50
